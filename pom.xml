@@ -52,7 +52,7 @@
             <version>1.0.0</version>
         </dependency>
 
-		<!-- Unfortunately we don´t have a cannonical javax.persistence 2.1 yet -->
+		<!-- Unfortunately we donÂ´t have a cannonical javax.persistence 2.1 yet -->
 		<dependency>
 			<groupId>org.eclipse.persistence</groupId>
 			<artifactId>javax.persistence</artifactId>
