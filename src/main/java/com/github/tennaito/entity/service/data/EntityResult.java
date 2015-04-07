@@ -23,6 +23,30 @@
  */
 package com.github.tennaito.entity.service.data;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class EntityResult {
 
+	private final String name;
+	private Map<String, Object> properties = new HashMap<String, Object>();
+	
+	public EntityResult(String name) {
+		this.name = name;
+	}
+	
+	public void put(String name, Object value) {
+		properties.put(name, value);
+	}
+	
+	public <T> T get(String name) {
+		if (!properties.containsKey(name)) {
+			throw new IllegalArgumentException("Undefined property from EntityResult " + getName());
+		}
+		return (T)properties.get(name);
+	}
+	
+	public String getName() {
+		return this.name;
+	}
 }

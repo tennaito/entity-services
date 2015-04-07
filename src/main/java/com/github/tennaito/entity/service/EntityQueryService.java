@@ -32,9 +32,9 @@ public interface EntityQueryService {
 	public EntityResult querySingle(Class<?> entity, List<String> properties, String rsql);
 	
 	public long count(Class<?> entity);
-	public List<EntityResult> queryPartial(Class<?> entity, List<String> properties, int page, int pageSize);
-	public List<EntityResult> queryAll(Class<?> entity, int page, int pageSize);
+	public List<EntityResult> queryPartial(Class<?> entity, List<String> properties, Integer page, Integer pageSize);
+	public List<EntityResult> queryAll(Class<?> entity, Integer page, Integer pageSize);
 
 	public long countWhere(Class<?> entity, String rsql);
-	public List<EntityResult> queryWhere(Class<?> entity, List<String> properties, String rsql, int page, int pageSize);
+	public List<EntityResult> queryWhere(Class<?> entity, List<String> properties, String rsql, Integer page, Integer pageSize);
 }
