@@ -30,8 +30,12 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -181,12 +185,59 @@ public class DefaultEntityQueryService implements EntityQueryService {
 		try {
 			BeanInfo info = Introspector.getBeanInfo(singleResult.getClass());
 	        for (PropertyDescriptor pd : info.getPropertyDescriptors()) {
-	        	result.put(pd.getName(),pd.getReadMethod().invoke(singleResult));
+	        	result.put(pd.getName(), parseSiblings(pd.getReadMethod().invoke(singleResult)));
 	        }
 		} catch (IntrospectionException e) {
 			throw new IllegalArgumentException(e);
 		} catch (ReflectiveOperationException e) {
 			throw new IllegalArgumentException(e);
+		}
+		return result;
+	}
+	
+	private boolean acceptParse(Object object) {
+		return (object.getClass().isArray()) ||
+			   (object instanceof Collection) || 
+			   (object instanceof Map) || 
+			   (object.getClass().isAnnotationPresent(Entity.class));
+	}
+	
+	private Object parseSiblings(Object sibling) {
+		Object result = sibling;
+		if (acceptParse(sibling)) {
+			if (sibling.getClass().isArray()) {
+				result = parseSiblingsArray((Object[])sibling);
+			} else if (sibling instanceof Collection) {
+				result = parseSiblingsCollection((Collection)sibling);
+			} else if (sibling instanceof Map) {
+				result = parseSiblingsMap((Map<Object, Object>)sibling);
+			} else if (sibling.getClass().isAnnotationPresent(Entity.class)) {
+				result = parseSingleResult(sibling);
+			}
+		}
+		return result;
+	}
+	
+	private Object[] parseSiblingsArray(Object[] sibling) {
+		Object[] result = new Object[sibling.length];
+		for (int i = 0; i < sibling.length; i++) {
+			result[i] = parseSiblings(sibling[i]);
+		}
+		return result;
+	}
+	
+	private Collection parseSiblingsCollection(Collection sibling) {
+		Collection result = new ArrayList();
+		for (Object object : sibling) {
+			result.add(parseSiblings(object));
+		}
+		return result;
+	}
+	
+	private Map<Object, Object> parseSiblingsMap(Map<Object, Object> sibling) {
+		Map<Object, Object> result = new HashMap<Object, Object>();
+		for (Map.Entry<Object, Object> entry : sibling.entrySet()) {
+			result.put(parseSiblings(entry.getKey()), parseSiblings(entry.getValue()));
 		}
 		return result;
 	}
@@ -218,5 +269,5 @@ public class DefaultEntityQueryService implements EntityQueryService {
 			}
 		}
 		return (Root<T>) query.getRoots().iterator().next();
-	}	
+	}
 }

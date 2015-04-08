@@ -1,7 +1,10 @@
 package com.github.tennaito.test.jpa;
 
 import static junit.framework.Assert.assertEquals;
+
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
@@ -10,6 +13,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.github.tennaito.entity.service.EntityQueryService;
+import com.github.tennaito.entity.service.data.EntityResult;
 import com.github.tennaito.entity.service.impl.DefaultEntityQueryService;
 import com.github.tennaito.test.jpa.entity.InvoiceList;
 import com.github.tennaito.test.jpa.entity.Item;
@@ -85,5 +89,7 @@ public class EntityQueryServiceTest {
 		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
 		EntityQueryService service = new DefaultEntityQueryService(manager);
 		assertEquals("Fruits", service.querySingle(InvoiceList.class, null, null).get("description"));
+		List<EntityResult> items = service.querySingle(InvoiceList.class, null, null).get("items");
+		assertEquals("blueberry", items.get(0).get("description"));
 	}	
 }
