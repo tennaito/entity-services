@@ -25,16 +25,16 @@ package com.github.tennaito.entity.service;
 
 import java.util.List;
 
-import com.github.tennaito.entity.service.data.EntityResult;
+import com.github.tennaito.entity.service.data.EntityState;
 
 public interface EntityQueryService {
 
-	public EntityResult querySingle(Class<?> entity, List<String> properties, String rsql);
+	public EntityState querySingle(Class<?> entity, List<String> properties, String rsql);
 	
 	public long count(Class<?> entity);
-	public List<EntityResult> queryPartial(Class<?> entity, List<String> properties, Integer page, Integer pageSize);
-	public List<EntityResult> queryAll(Class<?> entity, Integer page, Integer pageSize);
+	public List<EntityState> queryPartial(Class<?> entity, List<String> properties, Integer page, Integer pageSize);
+	public List<EntityState> queryAll(Class<?> entity, Integer page, Integer pageSize);
 
 	public long countWhere(Class<?> entity, String rsql);
-	public List<EntityResult> queryWhere(Class<?> entity, List<String> properties, String rsql, Integer page, Integer pageSize);
+	public List<EntityState> queryWhere(Class<?> entity, List<String> properties, String rsql, Integer page, Integer pageSize);
 }

@@ -28,7 +28,6 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -44,7 +43,7 @@ import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Selection;
 
 import com.github.tennaito.entity.service.EntityQueryService;
-import com.github.tennaito.entity.service.data.EntityResult;
+import com.github.tennaito.entity.service.data.EntityState;
 import com.github.tennaito.rsql.jpa.JpaCriteriaQueryVisitor;
 
 import cz.jirutka.rsql.parser.RSQLParser;
@@ -89,7 +88,7 @@ public class DefaultEntityQueryService implements EntityQueryService {
 	/* (non-Javadoc)
 	 * @see com.github.tennaito.entity.service.EntityQueryService#querySingle(java.lang.Class, java.util.List, java.lang.String)
 	 */
-	public EntityResult querySingle(Class<?> entity, List<String> properties, String rsql) {
+	public EntityState querySingle(Class<?> entity, List<String> properties, String rsql) {
 		return parseSingleResult(buildQueryWhere(entity, properties, rsql, null, null).getSingleResult());
 	}
 
@@ -103,14 +102,14 @@ public class DefaultEntityQueryService implements EntityQueryService {
 	/* (non-Javadoc)
 	 * @see com.github.tennaito.entity.service.EntityQueryService#queryPartial(java.lang.Class, java.util.List, java.lang.Integer, java.lang.Integer)
 	 */
-	public List<EntityResult> queryPartial(Class<?> entity, List<String> properties, Integer page, Integer pageSize) {
+	public List<EntityState> queryPartial(Class<?> entity, List<String> properties, Integer page, Integer pageSize) {
 		return queryWhere(entity, properties, null, page, pageSize);
 	}
 
 	/* (non-Javadoc)
 	 * @see com.github.tennaito.entity.service.EntityQueryService#queryAll(java.lang.Class, java.lang.Integer, java.lang.Integer)
 	 */
-	public List<EntityResult> queryAll(Class<?> entity, Integer page, Integer pageSize) {
+	public List<EntityState> queryAll(Class<?> entity, Integer page, Integer pageSize) {
 		return queryWhere(entity, null, null, page, pageSize);
 	}
 
@@ -133,7 +132,7 @@ public class DefaultEntityQueryService implements EntityQueryService {
 	/* (non-Javadoc)
 	 * @see com.github.tennaito.entity.service.EntityQueryService#queryWhere(java.lang.Class, java.util.List, java.lang.String, java.lang.Integer, java.lang.Integer)
 	 */
-	public List<EntityResult> queryWhere(Class<?> entity, List<String> properties, String rsql, Integer page, Integer pageSize) {
+	public List<EntityState> queryWhere(Class<?> entity, List<String> properties, String rsql, Integer page, Integer pageSize) {
 		return parseResultList(buildQueryWhere(entity, properties, rsql, page, pageSize).getResultList());
 	}
 
@@ -175,13 +174,16 @@ public class DefaultEntityQueryService implements EntityQueryService {
 		return query;
 	}
 	
-	private List<EntityResult> parseResultList(List<Object> resultList) {
-		// TODO Auto-generated method stub
-		return null;
+	private List<EntityState> parseResultList(List<Object> resultList) {
+		List<EntityState> result = new ArrayList<EntityState>();
+		for (Object element : resultList) {
+			result.add(parseSingleResult(element));
+		}
+		return result;
 	}
 	
-	private EntityResult parseSingleResult(Object singleResult) {
-		EntityResult result = new EntityResult(singleResult.getClass().getName());
+	private EntityState parseSingleResult(Object singleResult) {
+		EntityState result = new EntityState(singleResult.getClass().getName());
 		try {
 			BeanInfo info = Introspector.getBeanInfo(singleResult.getClass());
 	        for (PropertyDescriptor pd : info.getPropertyDescriptors()) {
@@ -226,8 +228,8 @@ public class DefaultEntityQueryService implements EntityQueryService {
 		return result;
 	}
 	
-	private Collection parseSiblingsCollection(Collection sibling) {
-		Collection result = new ArrayList();
+	private Collection<Object> parseSiblingsCollection(Collection sibling) {
+		Collection<Object> result = new ArrayList<Object>();
 		for (Object object : sibling) {
 			result.add(parseSiblings(object));
 		}
