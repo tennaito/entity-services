@@ -23,6 +23,7 @@
  */
 package com.github.tennaito.test.jpa.entity;
 
+import java.io.Serializable;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -35,9 +36,14 @@ import javax.persistence.OneToMany;
  * @author Antonio Rabelo
  */
 @Entity
-public class InvoiceList {
+public class InvoiceList implements Serializable {
 
-    @Id
+    /**
+	 * SERIAL UID
+	 */
+	private static final long serialVersionUID = -1828165956501727930L;
+
+	@Id
     private Integer id;
 
     @Column
@@ -68,5 +74,49 @@ public class InvoiceList {
 
 	public void setItems(Set<Item> items) {
 		this.items = items;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + ((items == null) ? 0 : items.hashCode());
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		InvoiceList other = (InvoiceList) obj;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		if (items == null) {
+			if (other.items != null)
+				return false;
+		} else if (!items.equals(other.items))
+			return false;
+		return true;
 	}
 }

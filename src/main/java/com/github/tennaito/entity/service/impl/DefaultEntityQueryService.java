@@ -23,18 +23,10 @@
  */
 package com.github.tennaito.entity.service.impl;
 
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -43,7 +35,6 @@ import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Selection;
 
 import com.github.tennaito.entity.service.EntityQueryService;
-import com.github.tennaito.entity.service.data.EntityState;
 import com.github.tennaito.rsql.jpa.JpaCriteriaQueryVisitor;
 
 import cz.jirutka.rsql.parser.RSQLParser;
@@ -57,13 +48,13 @@ import cz.jirutka.rsql.parser.ast.RSQLVisitor;
  * 
  * @author Antonio Rabelo
  */
-public class DefaultEntityQueryService implements EntityQueryService {
+public class DefaultEntityQueryService<T> implements EntityQueryService<T> {
 
 	/**
 	 * EntityManager instance.
 	 */
 	private final EntityManager manager;
-	
+
 	/**
 	 * Constructor.
 	 * 
@@ -86,37 +77,65 @@ public class DefaultEntityQueryService implements EntityQueryService {
 	}
 	
 	/* (non-Javadoc)
+	 * @see com.github.tennaito.entity.service.EntityQueryService#querySingle(java.lang.Class, java.lang.String)
+	 */
+	public T querySingle(Class<T> entity, String rsql) {
+		return querySingle(entity, null, rsql);
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.github.tennaito.entity.service.EntityQueryService#querySingle(java.lang.Class, java.util.List)
+	 */
+	public T querySingle(Class<T> entity, List<String> properties) {
+		return querySingle(entity, properties, null);
+	}
+	
+	/* (non-Javadoc)
 	 * @see com.github.tennaito.entity.service.EntityQueryService#querySingle(java.lang.Class, java.util.List, java.lang.String)
 	 */
-	public EntityState querySingle(Class<?> entity, List<String> properties, String rsql) {
-		return parseSingleResult(buildQueryWhere(entity, properties, rsql, null, null).getSingleResult());
+	public T querySingle(Class<T> entity, List<String> properties, String rsql) {
+		return (T)buildQueryWhere(entity, properties, rsql, null, null).getSingleResult();
 	}
 
 	/* (non-Javadoc)
 	 * @see com.github.tennaito.entity.service.EntityQueryService#count(java.lang.Class)
 	 */
-	public long count(Class<?> entity) {
+	public long count(Class<T> entity) {
 		return countWhere(entity, null);
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.github.tennaito.entity.service.EntityQueryService#queryPartial(java.lang.Class, java.util.List)
+	 */
+	public List<T> queryPartial(Class<T> entity, List<String> properties) {
+		return queryPartial(entity, properties, null, null);
 	}
 
 	/* (non-Javadoc)
 	 * @see com.github.tennaito.entity.service.EntityQueryService#queryPartial(java.lang.Class, java.util.List, java.lang.Integer, java.lang.Integer)
 	 */
-	public List<EntityState> queryPartial(Class<?> entity, List<String> properties, Integer page, Integer pageSize) {
+	public List<T> queryPartial(Class<T> entity, List<String> properties, Integer page, Integer pageSize) {
 		return queryWhere(entity, properties, null, page, pageSize);
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.github.tennaito.entity.service.EntityQueryService#queryAll(java.lang.Class)
+	 */
+	public List<T> queryAll(Class<T> entity) {
+		return queryAll(entity, null, null);
 	}
 
 	/* (non-Javadoc)
 	 * @see com.github.tennaito.entity.service.EntityQueryService#queryAll(java.lang.Class, java.lang.Integer, java.lang.Integer)
 	 */
-	public List<EntityState> queryAll(Class<?> entity, Integer page, Integer pageSize) {
+	public List<T> queryAll(Class<T> entity, Integer page, Integer pageSize) {
 		return queryWhere(entity, null, null, page, pageSize);
 	}
 
 	/* (non-Javadoc)
 	 * @see com.github.tennaito.entity.service.EntityQueryService#countWhere(java.lang.Class, java.lang.String)
 	 */
-	public long countWhere(Class<?> entity, String rsql) {
+	public long countWhere(Class<T> entity, String rsql) {
 		CriteriaBuilder builder = getEntityManager().getCriteriaBuilder();
 		CriteriaQuery<Long> criteria = builder.createQuery(Long.class);
 		Root<?> root = criteria.from(entity);
@@ -128,19 +147,26 @@ public class DefaultEntityQueryService implements EntityQueryService {
 		criteria.select(builder.count(root));
 		return getEntityManager().createQuery(criteria).getSingleResult();		
 	}
+	
+	/* (non-Javadoc)
+	 * @see com.github.tennaito.entity.service.EntityQueryService#queryWhere(java.lang.Class, java.util.List, java.lang.String)
+	 */
+	public List<T> queryWhere(Class<T> entity, List<String> properties, String rsql) {
+		return queryWhere(entity, properties, rsql, null, null);
+	}
 
 	/* (non-Javadoc)
 	 * @see com.github.tennaito.entity.service.EntityQueryService#queryWhere(java.lang.Class, java.util.List, java.lang.String, java.lang.Integer, java.lang.Integer)
 	 */
-	public List<EntityState> queryWhere(Class<?> entity, List<String> properties, String rsql, Integer page, Integer pageSize) {
-		return parseResultList(buildQueryWhere(entity, properties, rsql, page, pageSize).getResultList());
+	public List<T> queryWhere(Class<T> entity, List<String> properties, String rsql, Integer page, Integer pageSize) {
+		return buildQueryWhere(entity, properties, rsql, page, pageSize).getResultList();
 	}
 
-	protected Query buildQueryWhere(Class<?> entity, List<String> properties, String rsql, Integer page, Integer pageSize) {
+	protected Query buildQueryWhere(Class<T> entity, List<String> properties, String rsql, Integer page, Integer pageSize) {
 		if (entity == null) {
 			throw new IllegalArgumentException("Entity must be defined.");
 		}
-		
+
 		if (page != null && page < 1) {
 			page = 1;
 		}
@@ -173,76 +199,6 @@ public class DefaultEntityQueryService implements EntityQueryService {
 		
 		return query;
 	}
-	
-	private List<EntityState> parseResultList(List<Object> resultList) {
-		List<EntityState> result = new ArrayList<EntityState>();
-		for (Object element : resultList) {
-			result.add(parseSingleResult(element));
-		}
-		return result;
-	}
-	
-	private EntityState parseSingleResult(Object singleResult) {
-		EntityState result = new EntityState(singleResult.getClass().getName());
-		try {
-			BeanInfo info = Introspector.getBeanInfo(singleResult.getClass());
-	        for (PropertyDescriptor pd : info.getPropertyDescriptors()) {
-	        	result.put(pd.getName(), parseSiblings(pd.getReadMethod().invoke(singleResult)));
-	        }
-		} catch (IntrospectionException e) {
-			throw new IllegalArgumentException(e);
-		} catch (ReflectiveOperationException e) {
-			throw new IllegalArgumentException(e);
-		}
-		return result;
-	}
-	
-	private boolean acceptParse(Object object) {
-		return (object.getClass().isArray()) ||
-			   (object instanceof Collection) || 
-			   (object instanceof Map) || 
-			   (object.getClass().isAnnotationPresent(Entity.class));
-	}
-	
-	private Object parseSiblings(Object sibling) {
-		Object result = sibling;
-		if (acceptParse(sibling)) {
-			if (sibling.getClass().isArray()) {
-				result = parseSiblingsArray((Object[])sibling);
-			} else if (sibling instanceof Collection) {
-				result = parseSiblingsCollection((Collection)sibling);
-			} else if (sibling instanceof Map) {
-				result = parseSiblingsMap((Map<Object, Object>)sibling);
-			} else if (sibling.getClass().isAnnotationPresent(Entity.class)) {
-				result = parseSingleResult(sibling);
-			}
-		}
-		return result;
-	}
-	
-	private Object[] parseSiblingsArray(Object[] sibling) {
-		Object[] result = new Object[sibling.length];
-		for (int i = 0; i < sibling.length; i++) {
-			result[i] = parseSiblings(sibling[i]);
-		}
-		return result;
-	}
-	
-	private Collection<Object> parseSiblingsCollection(Collection sibling) {
-		Collection<Object> result = new ArrayList<Object>();
-		for (Object object : sibling) {
-			result.add(parseSiblings(object));
-		}
-		return result;
-	}
-	
-	private Map<Object, Object> parseSiblingsMap(Map<Object, Object> sibling) {
-		Map<Object, Object> result = new HashMap<Object, Object>();
-		for (Map.Entry<Object, Object> entry : sibling.entrySet()) {
-			result.put(parseSiblings(entry.getKey()), parseSiblings(entry.getValue()));
-		}
-		return result;
-	}
 
 	private List<Selection<?>> createSelectionList(List<String> properties, Root<?> root) {
 		List<Selection<?>> selectedProperties = new ArrayList<Selection<?>>();
@@ -252,7 +208,7 @@ public class DefaultEntityQueryService implements EntityQueryService {
 		return selectedProperties;
 	}
 	
-	protected <T> CriteriaQuery<T> parseRsql(Class<? extends T> entity, String rsql) {
+	protected CriteriaQuery<T> parseRsql(Class<T> entity, String rsql) {
 		// Create the JPA Visitor for unknown entity
 		RSQLVisitor<CriteriaQuery<T>, EntityManager> visitor 
 			= new JpaCriteriaQueryVisitor<T>((T[])Array.newInstance(entity, 0));
@@ -263,13 +219,13 @@ public class DefaultEntityQueryService implements EntityQueryService {
 		// Visit the node to retrieve CriteriaQuery
 		return rootNode.accept(visitor, manager);
 	}
-	
-	protected static  <T> Root<T> findRoot(CriteriaQuery<?> query, Class<T> clazz) {
+
+	protected static <A> Root<A> findRoot(CriteriaQuery<?> query, Class<?> clazz) {
 		for (Root<?> r : query.getRoots()) {
 			if (clazz.equals(r.getJavaType())) {
-				return (Root<T>) r.as(clazz);
+				return (Root<A>) r.as(clazz);
 			}
 		}
-		return (Root<T>) query.getRoots().iterator().next();
+		return (Root<A>) query.getRoots().iterator().next();
 	}
 }

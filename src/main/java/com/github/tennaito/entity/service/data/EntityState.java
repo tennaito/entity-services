@@ -38,10 +38,12 @@ public class EntityState implements Serializable {
 	private static final long serialVersionUID = 4325863376241569764L;
 
 	private final String name;
+	private final Class<?> clazz;
 	private Map<String, Object> properties = new HashMap<String, Object>();
 	
-	public EntityState(String name) {
-		this.name = name;
+	public EntityState(Class<?> clazz) {
+		this.clazz = clazz;
+		this.name = clazz.getSimpleName();
 	}
 	
 	public void put(String name, Object value) {
@@ -53,6 +55,10 @@ public class EntityState implements Serializable {
 			throw new IllegalArgumentException("Undefined property from EntityResult " + getName());
 		}
 		return (T)properties.get(name);
+	}
+	
+	public Class<?> getOriginalType() {
+		return this.clazz;
 	}
 	
 	public String getName() {

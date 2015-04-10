@@ -25,16 +25,24 @@ package com.github.tennaito.entity.service;
 
 import java.util.List;
 
-import com.github.tennaito.entity.service.data.EntityState;
+/**
+ * @author Antonio Rabelo
+ *
+ * @param <T>
+ */
+public interface EntityQueryService<T> {
 
-public interface EntityQueryService {
-
-	public EntityState querySingle(Class<?> entity, List<String> properties, String rsql);
+	public T querySingle(Class<T> entity, String rsql);
+	public T querySingle(Class<T> entity, List<String> properties);
+	public T querySingle(Class<T> entity, List<String> properties, String rsql);
 	
-	public long count(Class<?> entity);
-	public List<EntityState> queryPartial(Class<?> entity, List<String> properties, Integer page, Integer pageSize);
-	public List<EntityState> queryAll(Class<?> entity, Integer page, Integer pageSize);
+	public long count(Class<T> entity);
+	public List<T> queryPartial(Class<T> entity, List<String> properties);	
+	public List<T> queryPartial(Class<T> entity, List<String> properties, Integer page, Integer pageSize);
+	public List<T> queryAll(Class<T> entity);	
+	public List<T> queryAll(Class<T> entity, Integer page, Integer pageSize);
 
-	public long countWhere(Class<?> entity, String rsql);
-	public List<EntityState> queryWhere(Class<?> entity, List<String> properties, String rsql, Integer page, Integer pageSize);
+	public long countWhere(Class<T> entity, String rsql);
+	public List<T> queryWhere(Class<T> entity, List<String> properties, String rsql);
+	public List<T> queryWhere(Class<T> entity, List<String> properties, String rsql, Integer page, Integer pageSize);
 }
