@@ -41,55 +41,47 @@ import com.github.tennaito.test.jpa.entity.Item;
  */
 public abstract class AbstractEntityServicesTest {
 	
+	private static boolean loaded = false;
+	
 	@BeforeClass
 	public static void setUpBefore() throws Exception {
-		EntityManager entityManager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
-    	entityManager.getTransaction().begin();
+		if (!loaded) {
+			EntityManager entityManager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
+	    	entityManager.getTransaction().begin();
 
-    	InvoiceList list = new InvoiceList();
-    	list.setId(1);
-    	list.setDescription("Fruits");
+	    	InvoiceList list = new InvoiceList();
+	    	list.setId(1);
+	    	list.setDescription("Fruits");
 
-    	Item item1 = new Item();
-    	item1.setDescription("blueberry");
-    	item1.setPrice(0.5d);
-    	item1.setQuantity(2000);
-    	entityManager.persist(item1);
-    	
-    	Item item2 = new Item();
-    	item2.setDescription("strawberry");
-    	item2.setPrice(1.0d);
-    	item2.setQuantity(100);
-    	entityManager.persist(item2);
-    	
-    	Item item3 = new Item();
-    	item3.setDescription("raspberry");
-    	item3.setPrice(0.75d);
-    	item3.setQuantity(300);
-    	entityManager.persist(item3);
-    	
-    	Set<Item> items = new HashSet<Item>();
-    	items.add(item1);
-    	items.add(item2);
-    	items.add(item3);
-    	
-    	list.setItems(items);
-    	
-    	entityManager.persist(list);
+	    	Item item1 = new Item();
+	    	item1.setDescription("blueberry");
+	    	item1.setPrice(0.5d);
+	    	item1.setQuantity(2000);
+	    	entityManager.persist(item1);
+	    	
+	    	Item item2 = new Item();
+	    	item2.setDescription("strawberry");
+	    	item2.setPrice(1.0d);
+	    	item2.setQuantity(100);
+	    	entityManager.persist(item2);
+	    	
+	    	Item item3 = new Item();
+	    	item3.setDescription("raspberry");
+	    	item3.setPrice(0.75d);
+	    	item3.setQuantity(300);
+	    	entityManager.persist(item3);
+	    	
+	    	Set<Item> items = new HashSet<Item>();
+	    	items.add(item1);
+	    	items.add(item2);
+	    	items.add(item3);
+	    	
+	    	list.setItems(items);
+	    	
+	    	entityManager.persist(list);
 
-    	entityManager.getTransaction().commit();
-	}
-	
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-		EntityManager entityManager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
-		Query query = null;
-		
-		entityManager.getTransaction().begin();
-		
-		query = entityManager.createQuery("delete from InvoiceList");
-		query.executeUpdate();
-		
-		entityManager.getTransaction().commit();
+	    	entityManager.getTransaction().commit();
+			loaded = true;
+		}
 	}
 }
