@@ -24,13 +24,22 @@
 package com.github.tennaito.test.jpa;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.fail;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NonUniqueResultException;
+import javax.persistence.Query;
 
+import org.eclipse.persistence.jpa.JpaQuery;
 import org.junit.Test;
 
 import com.github.tennaito.entity.service.EntityQueryService;
 import com.github.tennaito.entity.service.impl.DefaultEntityQueryService;
+import com.github.tennaito.entity.service.impl.QueryConfiguration;
 import com.github.tennaito.test.jpa.entity.InvoiceList;
 import com.github.tennaito.test.jpa.entity.Item;
 
@@ -55,10 +64,138 @@ public class EntityQueryServiceTest extends AbstractEntityServicesTest {
 	}
 
 	@Test
+	public void testQueryWhereItems() {
+		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
+		EntityQueryService<Item> service = new DefaultEntityQueryService<Item>(manager);
+		List<Item> items = service.queryWhere(Item.class, "description==*a*");
+		assertEquals(2, items.size());
+		for (Item item : items) {
+			if ("blueberry".equals(item.getDescription())) {
+				fail();
+				break;
+			}
+			assertTrue(item.getDescription() != null);
+			assertTrue(item.getId() != null);
+			assertTrue(item.getPrice() != null);
+			assertTrue(item.getQuantity() != null);
+		}
+	}		
+	
+	@Test
+	public void testQueryWherePaginatedItems() {
+		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
+		EntityQueryService<Item> service = new DefaultEntityQueryService<Item>(manager);
+		List<Item> items = service.queryWhere(Item.class, "description==*a*", 0, 1);
+		assertEquals(1, items.size());
+		for (Item item : items) {
+			if ("blueberry".equals(item.getDescription())) {
+				fail();
+				break;
+			}
+			assertTrue(item.getDescription() != null);
+			assertTrue(item.getId() != null);
+			assertTrue(item.getPrice() != null);
+			assertTrue(item.getQuantity() != null);
+		}
+	}
+	
+	@Test
+	public void testQueryWhereSpecificPropertiesItems() {
+		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
+		EntityQueryService<Item> service = new DefaultEntityQueryService<Item>(manager)
+				.setHint(new QueryConfiguration() {
+					public void applyConfiguration(Query query) {
+						((JpaQuery)query).getDatabaseQuery().dontMaintainCache();
+					}
+				});
+		List<String> properties = new ArrayList<String>();
+		properties.add("description");
+		List<Item> items = service.queryWhere(Item.class, properties, "description==*a*");
+		assertEquals(2, items.size());
+		for (Item item : items) {
+			if ("blueberry".equals(item.getDescription())) {
+				fail();
+				break;
+			}
+			assertTrue(item.getDescription() != null);
+			assertTrue(item.getId() == null);
+			assertTrue(item.getPrice() == null);
+			assertTrue(item.getQuantity() == null);
+		}
+	}	
+	
+	@Test
+	public void testQueryWhereSpecificPropertiesPaginatedItems() {
+		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
+		EntityQueryService<Item> service = new DefaultEntityQueryService<Item>(manager)
+				.setHint(new QueryConfiguration() {
+					public void applyConfiguration(Query query) {
+						((JpaQuery)query).getDatabaseQuery().dontMaintainCache();
+					}
+				});
+		List<String> properties = new ArrayList<String>();
+		properties.add("description");
+		List<Item> items = service.queryWhere(Item.class, properties, "description==*a*",0, 1);
+		assertEquals(1, items.size());
+		for (Item item : items) {
+			if ("blueberry".equals(item.getDescription())) {
+				fail();
+				break;
+			}
+			assertTrue(item.getDescription() != null);
+			assertTrue(item.getId() == null);
+			assertTrue(item.getPrice() == null);
+			assertTrue(item.getQuantity() == null);
+		}
+	}	
+
+	@Test
+	public void testQueryPartialSpecificPropertiesItems() {
+		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
+		EntityQueryService<Item> service = new DefaultEntityQueryService<Item>(manager)
+				.setHint(new QueryConfiguration() {
+					public void applyConfiguration(Query query) {
+						((JpaQuery)query).getDatabaseQuery().dontMaintainCache();
+					}
+				});
+		List<String> properties = new ArrayList<String>();
+		properties.add("description");
+		List<Item> items = service.queryPartial(Item.class, properties);
+		assertEquals(3, items.size());
+		for (Item item : items) {
+			assertTrue(item.getDescription() != null);
+			assertTrue(item.getId() == null);
+			assertTrue(item.getPrice() == null);
+			assertTrue(item.getQuantity() == null);
+		}
+	}	
+	
+	@Test
+	public void testQueryPartialSpecificPropertiesPaginatedItems() {
+		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
+		EntityQueryService<Item> service = new DefaultEntityQueryService<Item>(manager)
+				.setHint(new QueryConfiguration() {
+					public void applyConfiguration(Query query) {
+						((JpaQuery)query).getDatabaseQuery().dontMaintainCache();
+					}
+				});
+		List<String> properties = new ArrayList<String>();
+		properties.add("description");
+		List<Item> items = service.queryPartial(Item.class, properties, 0, 2);
+		assertEquals(2, items.size());
+		for (Item item : items) {
+			assertTrue(item.getDescription() != null);
+			assertTrue(item.getId() == null);
+			assertTrue(item.getPrice() == null);
+			assertTrue(item.getQuantity() == null);
+		}
+	}	
+
+	@Test
 	public void testQueryAll() {
 		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
 		EntityQueryService service = new DefaultEntityQueryService(manager);
-		assertEquals(3, service.queryAll(Item.class, null, null).size());
+		assertEquals(3, service.queryAll(Item.class).size());
 	}
 	
 	@Test
@@ -74,5 +211,59 @@ public class EntityQueryServiceTest extends AbstractEntityServicesTest {
 		EntityQueryService<InvoiceList> service = new DefaultEntityQueryService<InvoiceList>(manager);
 		assertEquals("Fruits", service.querySingle(InvoiceList.class, null, null).getDescription());
 		assertEquals(3, service.querySingle(InvoiceList.class, null, null).getItems().size());
+	}
+	
+	@Test
+	public void testQuerySingleItem() {
+		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
+		EntityQueryService<Item> service = new DefaultEntityQueryService<Item>(manager);
+		try {
+			service.querySingle(Item.class);
+			fail();
+		} catch (NonUniqueResultException e) {
+			assertTrue(true);
+		}
+	}
+	
+	@Test
+	public void testQuerySingleSpecificItem() {
+		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
+		EntityQueryService<Item> service = new DefaultEntityQueryService<Item>(manager);
+		assertEquals("blueberry",service.querySingle(Item.class, "id==1").getDescription());
+	}
+
+	@Test
+	public void testQuerySinglePropertiesItem() {
+		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
+		EntityQueryService<InvoiceList> service = new DefaultEntityQueryService<InvoiceList>(manager)
+				.setHint(new QueryConfiguration() {
+					public void applyConfiguration(Query query) {
+						((JpaQuery)query).getDatabaseQuery().dontMaintainCache();
+					}
+				});
+		List<String> properties = new ArrayList<String>();
+		properties.add("description");
+		assertTrue(service.querySingle(InvoiceList.class, properties).getDescription() != null);
+		assertTrue(service.querySingle(InvoiceList.class, properties).getId() == null);
+		assertTrue(service.querySingle(InvoiceList.class, properties).getItems() == null);
+	}
+	
+	@Test
+	public void testQuerySingleSpecificPropertiesItem() {
+		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
+		EntityQueryService<Item> service = new DefaultEntityQueryService<Item>(manager)
+				.setHint(new QueryConfiguration() {
+					public void applyConfiguration(Query query) {
+						((JpaQuery)query).getDatabaseQuery().dontMaintainCache();
+					}
+				});
+		List<String> properties = new ArrayList<String>();
+		properties.add("description");
+		String rsql = "id==1";
+		assertEquals("blueberry",service.querySingle(Item.class, "id==1").getDescription());		
+		assertTrue(service.querySingle(Item.class, properties, rsql).getDescription() != null);
+		assertTrue(service.querySingle(Item.class, properties, rsql).getId() == null);
+		assertTrue(service.querySingle(Item.class, properties, rsql).getPrice() == null);
+		assertTrue(service.querySingle(Item.class, properties, rsql).getQuantity() == null);
 	}
 }

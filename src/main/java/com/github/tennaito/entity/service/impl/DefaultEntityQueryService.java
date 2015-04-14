@@ -29,6 +29,7 @@ import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
@@ -54,6 +55,8 @@ public class DefaultEntityQueryService<T> implements EntityQueryService<T> {
 	 * EntityManager instance.
 	 */
 	private final EntityManager manager;
+	
+	private QueryConfiguration queryHint;
 
 	/**
 	 * Constructor.
@@ -67,6 +70,11 @@ public class DefaultEntityQueryService<T> implements EntityQueryService<T> {
 		this.manager = manager;
 	}
 	
+	public DefaultEntityQueryService<T> setHint(QueryConfiguration queryHint) {
+		this.queryHint = queryHint;
+		return this;
+	}
+	
 	/**
 	 * Returns an instance of the EntityManager.
 	 * 
@@ -76,6 +84,14 @@ public class DefaultEntityQueryService<T> implements EntityQueryService<T> {
 		return this.manager;
 	}
 	
+	
+	/* (non-Javadoc)
+	 * @see com.github.tennaito.entity.service.EntityQueryService#querySingle(java.lang.Class)
+	 */
+	public T querySingle(Class<T> entity) {
+		return querySingle(entity, null, null);
+	}
+
 	/* (non-Javadoc)
 	 * @see com.github.tennaito.entity.service.EntityQueryService#querySingle(java.lang.Class, java.lang.String)
 	 */
@@ -145,14 +161,35 @@ public class DefaultEntityQueryService<T> implements EntityQueryService<T> {
 			criteria = rsqlCriteria;
 		}
 		criteria.select(builder.count(root));
-		return getEntityManager().createQuery(criteria).getSingleResult();		
+		
+		TypedQuery<Long> query = getEntityManager().createQuery(criteria);
+		
+		if (this.queryHint != null) {
+			this.queryHint.applyConfiguration(query);
+		}
+		
+		return query.getSingleResult();		
 	}
 	
+	/* (non-Javadoc)
+	 * @see com.github.tennaito.entity.service.EntityQueryService#queryWhere(java.lang.Class, java.lang.String)
+	 */
+	public List<T> queryWhere(Class<T> entity, String rsql) {
+		return queryWhere(entity, null, rsql, null, null);
+	}
+
 	/* (non-Javadoc)
 	 * @see com.github.tennaito.entity.service.EntityQueryService#queryWhere(java.lang.Class, java.util.List, java.lang.String)
 	 */
 	public List<T> queryWhere(Class<T> entity, List<String> properties, String rsql) {
 		return queryWhere(entity, properties, rsql, null, null);
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.github.tennaito.entity.service.EntityQueryService#queryWhere(java.lang.Class, java.lang.String, java.lang.Integer, java.lang.Integer)
+	 */
+	public List<T> queryWhere(Class<T> entity, String rsql, Integer page, Integer pageSize) {
+		return queryWhere(entity, null, rsql, page, pageSize);
 	}
 
 	/* (non-Javadoc)
@@ -161,6 +198,7 @@ public class DefaultEntityQueryService<T> implements EntityQueryService<T> {
 	public List<T> queryWhere(Class<T> entity, List<String> properties, String rsql, Integer page, Integer pageSize) {
 		return buildQueryWhere(entity, properties, rsql, page, pageSize).getResultList();
 	}
+	
 
 	protected Query buildQueryWhere(Class<T> entity, List<String> properties, String rsql, Integer page, Integer pageSize) {
 		if (entity == null) {
@@ -188,6 +226,10 @@ public class DefaultEntityQueryService<T> implements EntityQueryService<T> {
 		}
 
 		Query query = getEntityManager().createQuery(criteria);
+		
+		if (this.queryHint != null) {
+			this.queryHint.applyConfiguration(query);
+		}
 		
 		if (page != null) {
 			query.setFirstResult((page - 1)*pageSize);

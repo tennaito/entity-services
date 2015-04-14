@@ -8,6 +8,7 @@
 		<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
 		<class>com.github.tennaito.test.jpa.entity.InvoiceList</class>
 		<class>com.github.tennaito.test.jpa.entity.Item</class>
+		<shared-cache-mode>NONE</shared-cache-mode>
 		<properties>
 			<property name="javax.persistence.jdbc.driver"   		 value="org.hsqldb.jdbcDriver" />
 			<property name="javax.persistence.jdbc.url"       		 value="jdbc:hsqldb:mem:EntityServices" />

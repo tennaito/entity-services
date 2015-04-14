@@ -21,31 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.github.tennaito.entity.service;
+package com.github.tennaito.entity.service.impl;
 
-import java.util.List;
+import javax.persistence.Query;
 
 /**
  * @author Antonio Rabelo
  *
- * @param <T>
  */
-public interface EntityQueryService<T> {
-
-	public T querySingle(Class<T> entity);
-	public T querySingle(Class<T> entity, String rsql);
-	public T querySingle(Class<T> entity, List<String> properties);
-	public T querySingle(Class<T> entity, List<String> properties, String rsql);
-	
-	public long count(Class<T> entity);
-	public List<T> queryPartial(Class<T> entity, List<String> properties);	
-	public List<T> queryPartial(Class<T> entity, List<String> properties, Integer page, Integer pageSize);
-	public List<T> queryAll(Class<T> entity);	
-	public List<T> queryAll(Class<T> entity, Integer page, Integer pageSize);
-
-	public long countWhere(Class<T> entity, String rsql);
-	public List<T> queryWhere(Class<T> entity, String rsql);
-	public List<T> queryWhere(Class<T> entity, List<String> properties, String rsql);
-	public List<T> queryWhere(Class<T> entity, String rsql, Integer page, Integer pageSize);
-	public List<T> queryWhere(Class<T> entity, List<String> properties, String rsql, Integer page, Integer pageSize);
+public interface QueryConfiguration {
+	public void applyConfiguration(Query query);
 }
