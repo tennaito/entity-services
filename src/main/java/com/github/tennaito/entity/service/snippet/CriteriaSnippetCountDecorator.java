@@ -43,13 +43,6 @@ public class CriteriaSnippetCountDecorator<T> extends AbstractCriteriaSnippetDec
 	public CriteriaSnippetCountDecorator(CriteriaSnippet<Long, T> snippet) {
 		super(snippet);
 	}
-	
-	/* (non-Javadoc)
-	 * @see com.github.tennaito.entity.service.snippet.CriteriaSnippetDecorator#validate()
-	 */
-	public boolean validate() throws IllegalArgumentException {
-		return super.validate();
-	}
 
 	/* (non-Javadoc)
 	 * @see com.github.tennaito.entity.service.snippet.CriteriaSnippetDecorator#modify(javax.persistence.criteria.CriteriaQuery, java.lang.Class, javax.persistence.EntityManager)
@@ -59,12 +52,5 @@ public class CriteriaSnippetCountDecorator<T> extends AbstractCriteriaSnippetDec
 		CriteriaBuilder builder = manager.getCriteriaBuilder();
 		criteria.select(builder.count(findRoot(criteria, entity)));
 		return criteria;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.github.tennaito.entity.service.snippet.CriteriaSnippetDecorator#configure(javax.persistence.TypedQuery)
-	 */
-	public TypedQuery<Long> configure(TypedQuery<Long> query) {
-		return super.configure(query);
 	}
 }

@@ -23,7 +23,7 @@
  */
 package com.github.tennaito.entity.service.data;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  * @author Antonio Rabelo
@@ -32,8 +32,8 @@ import java.util.List;
  */
 public interface EntityStateConverter<T> {
 	public EntityState createState(T entity);
-	public List<EntityState> createStateList(List<T> entityList);
+	public Collection<EntityState> createStateList(Collection<T> entityList);
 	
 	public T createEntity(EntityState state);
-	public List<T> createEntityList(List<EntityState> stateList);
+	public Collection<T> createEntityList(Collection<EntityState> stateList);
 }

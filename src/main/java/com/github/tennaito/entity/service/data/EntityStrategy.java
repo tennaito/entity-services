@@ -42,7 +42,7 @@ public class EntityStrategy<T> extends DefaultTransformation<T, EntityState> imp
 
 	@Override
 	protected Object specificTransformation(Object from, Map<Object, Object> cache) {
-		if (!EntityState.class.isAssignableFrom(from.getClass())) {
+		if (from == null || !EntityState.class.isAssignableFrom(from.getClass())) {
 			throw new IllegalArgumentException(
 					"Invalid type, instance must be assignable to com.github.tennaito.entity.service.data.EntityState class.");
 		}

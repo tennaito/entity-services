@@ -44,7 +44,7 @@ public class EntityStateStrategy<T> extends DefaultTransformation<EntityState, T
 
 	@Override
 	protected Object specificTransformation(Object from, Map<Object, Object> cache) {
-		if (!from.getClass().isAnnotationPresent(Entity.class)) {
+		if (from == null || !from.getClass().isAnnotationPresent(Entity.class)) {
 			throw new IllegalArgumentException("Invalid type, instance must have @javax.persistence.Entity annotation.");
 		}
 		EntityState result = new EntityState(from.getClass());

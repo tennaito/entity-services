@@ -26,6 +26,7 @@ package com.github.tennaito.test.jpa;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 
+import java.util.Collection;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
@@ -50,19 +51,43 @@ public class EntityStateConverterTest extends AbstractEntityServicesTest {
 	public void testCreateState() {
 		EntityState state = createState();
 		
+		assertEquals("InvoiceList", state.getName());
 		assertEquals(1, state.get("id"));
 		assertEquals("Fruits", state.get("description"));
 		assertEquals(3, state.<Set<EntityState>>get("items").size());
 	}
-
-	private EntityState createState() {
+	
+	@Test
+	public void testCreateStateList() {
 		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
 		EntityQueryService<InvoiceList> service = new DefaultEntityQueryService<InvoiceList>(manager);
 		InvoiceList invoice = service.querySingle(InvoiceList.class, "id==1");
 		
-		EntityStateConverter<InvoiceList> converter = new DefaultEntityStateConverter<InvoiceList>();
-		EntityState state   = converter.createState(invoice);
-		return state;
+		EntityStateConverter<Item> converter = new DefaultEntityStateConverter<Item>();
+		
+		Collection<EntityState> states = converter.createStateList(invoice.getItems());
+		
+		assertEquals(3, states.size());
+	}
+	
+	@Test
+	public void testCreateEntityList() {
+		EntityState state = createState();
+		
+		EntityStateConverter<Item> converter = new DefaultEntityStateConverter<Item>();
+		
+		Collection<Item> states = converter.createEntityList(state.<Set<EntityState>>get("items"));
+		
+		assertEquals(3, states.size());
+	}
+	
+	
+	@Test
+	public void testStateEquals() {
+		EntityState state1 = createState();
+		EntityState state2 = createState();
+		
+		assertTrue(state1.equals(state2));
 	}
 	
 	@Test
@@ -77,5 +102,38 @@ public class EntityStateConverterTest extends AbstractEntityServicesTest {
 		for (Object element : entity.getItems()) {
 			assertTrue(Item.class.isAssignableFrom(element.getClass()));			
 		}
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testInvalidCreateEntity() {
+		EntityStateConverter<InvoiceList> converter = new DefaultEntityStateConverter<InvoiceList>();
+		converter.createEntity(null);
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testInvalidCreateState() {
+		EntityStateConverter<InvoiceList> converter = new DefaultEntityStateConverter<InvoiceList>();
+		converter.createState(null);
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testInvalidDepth() {
+		new DefaultEntityStateConverter<InvoiceList>(-1);
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testEntityStateInvalidProperty() {
+		EntityState state   = createState();
+		state.get("invalid");
+	}
+	
+	private EntityState createState() {
+		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
+		EntityQueryService<InvoiceList> service = new DefaultEntityQueryService<InvoiceList>(manager);
+		InvoiceList invoice = service.querySingle(InvoiceList.class, "id==1");
+		
+		EntityStateConverter<InvoiceList> converter = new DefaultEntityStateConverter<InvoiceList>();
+		EntityState state   = converter.createState(invoice);
+		return state;
 	}
 }

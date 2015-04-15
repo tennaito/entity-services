@@ -24,7 +24,7 @@
 package com.github.tennaito.entity.service.data;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 
 /**
  * @author Antonio Rabelo
@@ -48,8 +48,8 @@ public class DefaultEntityStateConverter<T> implements EntityStateConverter<T> {
 		return this.toEntityState.transform(entity);
 	}
 
-	public List<EntityState> createStateList(List<T> entityList) {
-		List<EntityState> result = new ArrayList<EntityState>();
+	public Collection<EntityState> createStateList(Collection<T> entityList) {
+		Collection<EntityState> result = new ArrayList<EntityState>();
 		for (T element : entityList) {
 			result.add(createState(element));
 		}
@@ -60,8 +60,8 @@ public class DefaultEntityStateConverter<T> implements EntityStateConverter<T> {
 		return this.toEntity.transform(state);
 	}
 	
-	public List<T> createEntityList(List<EntityState> stateList) {
-		List<T> result = new ArrayList<T>();
+	public Collection<T> createEntityList(Collection<EntityState> stateList) {
+		Collection<T> result = new ArrayList<T>();
 		for (EntityState element : stateList) {
 			result.add(createEntity(element));
 		}

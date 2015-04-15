@@ -26,7 +26,6 @@ package com.github.tennaito.entity.service.snippet;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
@@ -72,13 +71,6 @@ public class CriteriaSnippetPaginationDecorator<R, T> extends AbstractCriteriaSn
 	}
 
 	/* (non-Javadoc)
-	 * @see com.github.tennaito.entity.service.snippet.CriteriaSnippetDecorator#modify(javax.persistence.criteria.CriteriaQuery, java.lang.Class, javax.persistence.EntityManager)
-	 */
-	public CriteriaQuery<R> modify(CriteriaQuery<R> criteria, Class<T> entity, EntityManager manager) {
-		return super.modify(criteria, entity, manager);
-	}
-
-	/* (non-Javadoc)
 	 * @see com.github.tennaito.entity.service.snippet.CriteriaSnippetDecorator#configure(javax.persistence.TypedQuery)
 	 */
 	public TypedQuery<R> configure(TypedQuery<R> query) {
@@ -93,14 +85,5 @@ public class CriteriaSnippetPaginationDecorator<R, T> extends AbstractCriteriaSn
 		}
 		
 		return query;
-	}
-	
-	private List<Selection<?>> createSelectionList(CriteriaQuery<R> criteria, Class<T> entity, List<String> properties) {
-		Root<?> root = findRoot(criteria, entity);
-		List<Selection<?>> selectedProperties = new ArrayList<Selection<?>>();
-		for (String property : properties) {
-			selectedProperties.add(root.get(property));
-		}
-		return selectedProperties;
 	}
 }

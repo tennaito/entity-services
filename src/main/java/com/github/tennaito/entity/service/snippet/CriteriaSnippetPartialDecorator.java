@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Selection;
@@ -51,13 +50,6 @@ public class CriteriaSnippetPartialDecorator<R, T> extends AbstractCriteriaSnipp
 		super(snippet);
 		this.properties = properties;
 	}
-	
-	/* (non-Javadoc)
-	 * @see com.github.tennaito.entity.service.snippet.CriteriaSnippetDecorator#validate()
-	 */
-	public boolean validate() throws IllegalArgumentException {
-		return super.validate();
-	}
 
 	/* (non-Javadoc)
 	 * @see com.github.tennaito.entity.service.snippet.CriteriaSnippetDecorator#modify(javax.persistence.criteria.CriteriaQuery, java.lang.Class, javax.persistence.EntityManager)
@@ -68,13 +60,6 @@ public class CriteriaSnippetPartialDecorator<R, T> extends AbstractCriteriaSnipp
 			criteria = criteria.multiselect(createSelectionList(criteria, entity, properties));
 		}
 		return criteria;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.github.tennaito.entity.service.snippet.CriteriaSnippetDecorator#configure(javax.persistence.TypedQuery)
-	 */
-	public TypedQuery<R> configure(TypedQuery<R> query) {
-		return super.configure(query);
 	}
 	
 	private List<Selection<?>> createSelectionList(CriteriaQuery<R> criteria, Class<T> entity, List<String> properties) {

@@ -87,7 +87,7 @@ public abstract class DefaultTransformation<T, F> implements TransformationStrat
 					result = parseSiblingsCollection((Collection)sibling, cache);
 				} else if (sibling instanceof Map) {
 					result = parseSiblingsMap((Map<Object, Object>)sibling, cache);
-				} else if (acceptType(sibling.getClass())) {
+				} else if (acceptType(sibling)) {
 					result = cachedTransform(sibling, cache);
 				}
 			}

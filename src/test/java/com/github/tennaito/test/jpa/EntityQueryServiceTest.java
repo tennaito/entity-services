@@ -287,10 +287,17 @@ public class EntityQueryServiceTest extends AbstractEntityServicesTest {
 	}
 	
 	@Test(expected = IllegalArgumentException.class)
-	public void testQueryInvalidPagination() {
+	public void testQueryInvalidPaginationPage() {
 		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
 		EntityQueryService<Item> service = new DefaultEntityQueryService<Item>(manager);
 		service.queryAll(Item.class, 0, 0);
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void testQueryInvalidPaginationPageSize() {
+		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
+		EntityQueryService<Item> service = new DefaultEntityQueryService<Item>(manager);
+		service.queryAll(Item.class, 1, 0);
 	}
 	
 	@Test(expected = IllegalArgumentException.class)

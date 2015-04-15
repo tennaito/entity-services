@@ -26,7 +26,6 @@ package com.github.tennaito.entity.service.snippet;
 import java.lang.reflect.Array;
 
 import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaQuery;
 
 import com.github.tennaito.rsql.jpa.JpaCriteriaQueryVisitor;
@@ -54,13 +53,6 @@ public class CriteriaSnippetRsqlDecorator<R, T> extends AbstractCriteriaSnippetD
 		super(snippet);
 		this.rsql = rsql;
 	}
-	
-	/* (non-Javadoc)
-	 * @see com.github.tennaito.entity.service.snippet.CriteriaSnippetDecorator#validate()
-	 */
-	public boolean validate() throws IllegalArgumentException {
-		return super.validate();
-	}
 
 	/* (non-Javadoc)
 	 * @see com.github.tennaito.entity.service.snippet.CriteriaSnippetDecorator#modify(javax.persistence.criteria.CriteriaQuery, java.lang.Class, javax.persistence.EntityManager)
@@ -71,13 +63,6 @@ public class CriteriaSnippetRsqlDecorator<R, T> extends AbstractCriteriaSnippetD
 			criteria = parseRsql(entity, rsql, manager);
 		}
 		return criteria;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.github.tennaito.entity.service.snippet.CriteriaSnippetDecorator#configure(javax.persistence.TypedQuery)
-	 */
-	public TypedQuery<R> configure(TypedQuery<R> query) {
-		return super.configure(query);
 	}
 	
 	protected CriteriaQuery parseRsql(Class<T> entity, String rsql, EntityManager manager) {

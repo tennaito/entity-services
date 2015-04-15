@@ -87,14 +87,11 @@ public class DefaultEntityQueryService<T> extends AbstractEntityQueryService<T> 
 		CriteriaSnippetRsqlDecorator<Long, T> rsqlSnippet = new CriteriaSnippetRsqlDecorator<Long, T>(rsql, null);
 		CriteriaSnippetCountDecorator<T> countSnippet = new CriteriaSnippetCountDecorator<T>(rsqlSnippet);
 		return this.<Long>buildQueryTemplateMethod(Long.class, entity, countSnippet);
-	}	
-	
+	}
+
 	protected <R> TypedQuery<R> buildQueryTemplateMethod(Class<R> resultClass, Class<T> entity, CriteriaSnippet<R,T> snippet) {
 		TypedQuery<R> query = null;
-		if (resultClass == null) {
-			throw new IllegalArgumentException("Result class must be defined.");
-		}
-		
+
 		if (entity == null) {
 			throw new IllegalArgumentException("Entity must be defined.");
 		}
