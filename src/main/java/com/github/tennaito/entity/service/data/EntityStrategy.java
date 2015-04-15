@@ -42,7 +42,7 @@ public class EntityStrategy<T> extends DefaultTransformation<T, EntityState> imp
 
 	@Override
 	protected Object specificTransformation(Object from, Map<Object, Object> cache) {
-		if (from == null || !EntityState.class.isAssignableFrom(from.getClass())) {
+		if (!this.acceptType(from)) {
 			throw new IllegalArgumentException(
 					"Invalid type, instance must be assignable to com.github.tennaito.entity.service.data.EntityState class.");
 		}
@@ -67,6 +67,6 @@ public class EntityStrategy<T> extends DefaultTransformation<T, EntityState> imp
 
 	@Override
 	protected boolean acceptType(Object object) {
-		return EntityState.class.isAssignableFrom(object.getClass());		
+		return object != null && EntityState.class.isAssignableFrom(object.getClass());		
 	}
 }

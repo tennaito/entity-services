@@ -27,9 +27,8 @@ import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.io.Serializable;
 import java.util.Map;
-
-import javax.persistence.Entity;
 
 /**
  * @author Antonio Rabelo
@@ -44,7 +43,7 @@ public class EntityStateStrategy<T> extends DefaultTransformation<EntityState, T
 
 	@Override
 	protected Object specificTransformation(Object from, Map<Object, Object> cache) {
-		if (from == null || !from.getClass().isAnnotationPresent(Entity.class)) {
+		if (!this.acceptType(from)) {
 			throw new IllegalArgumentException("Invalid type, instance must have @javax.persistence.Entity annotation.");
 		}
 		EntityState result = new EntityState(from.getClass());
@@ -65,6 +64,23 @@ public class EntityStateStrategy<T> extends DefaultTransformation<EntityState, T
 	
 	@Override
 	protected boolean acceptType(Object object) {
-		return object.getClass().isAnnotationPresent(Entity.class);
+		return object != null && this.isPojo(object);
+	}
+	
+	protected boolean isPojo(Object object) {
+		boolean result = false;
+		try {
+			result = // is not primitive
+					 (!object.getClass().isPrimitive()) && 
+					 // is serializable
+					 (Serializable.class.isAssignableFrom(object.getClass())) &&
+					 // is not a java.lang
+					 (!object.getClass().getName().startsWith("java.lang")) &&					 
+					 // has properties
+					 (Introspector.getBeanInfo(object.getClass()).getPropertyDescriptors().length > 0);
+		} catch (IntrospectionException e) {
+			result = false;
+		}
+		return result;
 	}
 }
