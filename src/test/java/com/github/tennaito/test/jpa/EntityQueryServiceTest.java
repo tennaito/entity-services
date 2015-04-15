@@ -49,20 +49,37 @@ import com.github.tennaito.test.jpa.entity.Item;
  */
 public class EntityQueryServiceTest extends AbstractEntityServicesTest {
 
+	@Test(expected=IllegalArgumentException.class)
+	public void testEntityQueryServiceInstantiation() {
+		new DefaultEntityQueryService<InvoiceList>(null);
+	}
+	
 	@Test
 	public void testCount() {
 		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
-		EntityQueryService service = new DefaultEntityQueryService(manager);
+		EntityQueryService<InvoiceList> service = new DefaultEntityQueryService<InvoiceList>(manager);
 		assertEquals(1, service.count(InvoiceList.class));
 	}
 	
 	@Test
 	public void testCountWhere() {
 		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
-		EntityQueryService service = new DefaultEntityQueryService(manager);
+		EntityQueryService<InvoiceList> service = new DefaultEntityQueryService<InvoiceList>(manager);
 		assertEquals(1, service.countWhere(InvoiceList.class, "id==1"));
 	}
-
+	
+	@Test(expected = UnsupportedOperationException.class)
+	public void testCountWhereHint() {
+		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
+		EntityQueryService<Item> service = new DefaultEntityQueryService<Item>(manager)
+			.configure(new QueryConfiguration() {
+				public void applyConfiguration(Query query) {
+					throw new UnsupportedOperationException();
+				}
+			});
+		assertEquals(3, service.countWhere(Item.class,"description==*berry*"));
+	}
+	
 	@Test
 	public void testQueryWhereItems() {
 		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
@@ -85,7 +102,7 @@ public class EntityQueryServiceTest extends AbstractEntityServicesTest {
 	public void testQueryWherePaginatedItems() {
 		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
 		EntityQueryService<Item> service = new DefaultEntityQueryService<Item>(manager);
-		List<Item> items = service.queryWhere(Item.class, "description==*a*", 0, 1);
+		List<Item> items = service.queryWhere(Item.class, "description==*a*", 1, 1);
 		assertEquals(1, items.size());
 		for (Item item : items) {
 			if ("blueberry".equals(item.getDescription())) {
@@ -103,7 +120,7 @@ public class EntityQueryServiceTest extends AbstractEntityServicesTest {
 	public void testQueryWhereSpecificPropertiesItems() {
 		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
 		EntityQueryService<Item> service = new DefaultEntityQueryService<Item>(manager)
-				.setHint(new QueryConfiguration() {
+				.configure(new QueryConfiguration() {
 					public void applyConfiguration(Query query) {
 						((JpaQuery)query).getDatabaseQuery().dontMaintainCache();
 					}
@@ -128,14 +145,14 @@ public class EntityQueryServiceTest extends AbstractEntityServicesTest {
 	public void testQueryWhereSpecificPropertiesPaginatedItems() {
 		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
 		EntityQueryService<Item> service = new DefaultEntityQueryService<Item>(manager)
-				.setHint(new QueryConfiguration() {
+				.configure(new QueryConfiguration() {
 					public void applyConfiguration(Query query) {
 						((JpaQuery)query).getDatabaseQuery().dontMaintainCache();
 					}
 				});
 		List<String> properties = new ArrayList<String>();
 		properties.add("description");
-		List<Item> items = service.queryWhere(Item.class, properties, "description==*a*",0, 1);
+		List<Item> items = service.queryWhere(Item.class, properties, "description==*a*", 1, 1);
 		assertEquals(1, items.size());
 		for (Item item : items) {
 			if ("blueberry".equals(item.getDescription())) {
@@ -153,7 +170,7 @@ public class EntityQueryServiceTest extends AbstractEntityServicesTest {
 	public void testQueryPartialSpecificPropertiesItems() {
 		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
 		EntityQueryService<Item> service = new DefaultEntityQueryService<Item>(manager)
-				.setHint(new QueryConfiguration() {
+				.configure(new QueryConfiguration() {
 					public void applyConfiguration(Query query) {
 						((JpaQuery)query).getDatabaseQuery().dontMaintainCache();
 					}
@@ -174,14 +191,14 @@ public class EntityQueryServiceTest extends AbstractEntityServicesTest {
 	public void testQueryPartialSpecificPropertiesPaginatedItems() {
 		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
 		EntityQueryService<Item> service = new DefaultEntityQueryService<Item>(manager)
-				.setHint(new QueryConfiguration() {
+				.configure(new QueryConfiguration() {
 					public void applyConfiguration(Query query) {
 						((JpaQuery)query).getDatabaseQuery().dontMaintainCache();
 					}
 				});
 		List<String> properties = new ArrayList<String>();
 		properties.add("description");
-		List<Item> items = service.queryPartial(Item.class, properties, 0, 2);
+		List<Item> items = service.queryPartial(Item.class, properties, 1, 2);
 		assertEquals(2, items.size());
 		for (Item item : items) {
 			assertTrue(item.getDescription() != null);
@@ -194,7 +211,7 @@ public class EntityQueryServiceTest extends AbstractEntityServicesTest {
 	@Test
 	public void testQueryAll() {
 		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
-		EntityQueryService service = new DefaultEntityQueryService(manager);
+		EntityQueryService<Item> service = new DefaultEntityQueryService<Item>(manager);
 		assertEquals(3, service.queryAll(Item.class).size());
 	}
 	
@@ -209,12 +226,13 @@ public class EntityQueryServiceTest extends AbstractEntityServicesTest {
 	public void testQuerySingle() {
 		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
 		EntityQueryService<InvoiceList> service = new DefaultEntityQueryService<InvoiceList>(manager);
-		assertEquals("Fruits", service.querySingle(InvoiceList.class, null, null).getDescription());
-		assertEquals(3, service.querySingle(InvoiceList.class, null, null).getItems().size());
+		InvoiceList invoice = service.querySingle(InvoiceList.class);
+		assertEquals("Fruits", invoice.getDescription());
+		assertEquals(3, invoice.getItems().size());
 	}
 	
 	@Test
-	public void testQuerySingleItem() {
+	public void testQuerySingleNonUniqueItem() {
 		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
 		EntityQueryService<Item> service = new DefaultEntityQueryService<Item>(manager);
 		try {
@@ -236,34 +254,49 @@ public class EntityQueryServiceTest extends AbstractEntityServicesTest {
 	public void testQuerySinglePropertiesItem() {
 		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
 		EntityQueryService<InvoiceList> service = new DefaultEntityQueryService<InvoiceList>(manager)
-				.setHint(new QueryConfiguration() {
+				.configure(new QueryConfiguration() {
 					public void applyConfiguration(Query query) {
 						((JpaQuery)query).getDatabaseQuery().dontMaintainCache();
 					}
 				});
 		List<String> properties = new ArrayList<String>();
 		properties.add("description");
-		assertTrue(service.querySingle(InvoiceList.class, properties).getDescription() != null);
-		assertTrue(service.querySingle(InvoiceList.class, properties).getId() == null);
-		assertTrue(service.querySingle(InvoiceList.class, properties).getItems() == null);
+		InvoiceList invoice = service.querySingle(InvoiceList.class, properties);
+		assertTrue(invoice.getDescription() != null);
+		assertTrue(invoice.getId() == null);
+		assertTrue(invoice.getItems() == null);
 	}
 	
 	@Test
 	public void testQuerySingleSpecificPropertiesItem() {
 		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
 		EntityQueryService<Item> service = new DefaultEntityQueryService<Item>(manager)
-				.setHint(new QueryConfiguration() {
+				.configure(new QueryConfiguration() {
 					public void applyConfiguration(Query query) {
 						((JpaQuery)query).getDatabaseQuery().dontMaintainCache();
 					}
 				});
 		List<String> properties = new ArrayList<String>();
 		properties.add("description");
-		String rsql = "id==1";
-		assertEquals("blueberry",service.querySingle(Item.class, "id==1").getDescription());		
-		assertTrue(service.querySingle(Item.class, properties, rsql).getDescription() != null);
-		assertTrue(service.querySingle(Item.class, properties, rsql).getId() == null);
-		assertTrue(service.querySingle(Item.class, properties, rsql).getPrice() == null);
-		assertTrue(service.querySingle(Item.class, properties, rsql).getQuantity() == null);
+		Item item = service.querySingle(Item.class, properties, "id==1");
+		assertEquals("blueberry",item.getDescription());		
+		assertTrue(item.getDescription() != null);
+		assertTrue(item.getId() == null);
+		assertTrue(item.getPrice() == null);
+		assertTrue(item.getQuantity() == null);
 	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void testQueryInvalidPagination() {
+		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
+		EntityQueryService<Item> service = new DefaultEntityQueryService<Item>(manager);
+		service.queryAll(Item.class, 0, 0);
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void testQueryInvalidEntity() {
+		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
+		EntityQueryService<Item> service = new DefaultEntityQueryService<Item>(manager);
+		service.queryAll(null);
+	}	
 }

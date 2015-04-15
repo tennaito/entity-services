@@ -30,20 +30,11 @@ import java.util.List;
  *
  * @param <T>
  */
-public interface EntityQueryService<T> extends EssentialEntityQueryService<T> {
+public interface EssentialEntityQueryService<T> {
 
-	public long count(Class<T> entity);
+	public long countWhere(Class<T> entity, String rsql);
 	
-	public T querySingle(Class<T> entity);
-	public T querySingle(Class<T> entity, String rsql);
-	public T querySingle(Class<T> entity, List<String> properties);
-
-	public List<T> queryPartial(Class<T> entity, List<String> properties);	
-	public List<T> queryPartial(Class<T> entity, List<String> properties, Integer page, Integer pageSize);
-	public List<T> queryAll(Class<T> entity);	
-	public List<T> queryAll(Class<T> entity, Integer page, Integer pageSize);
-
-	public List<T> queryWhere(Class<T> entity, String rsql);
-	public List<T> queryWhere(Class<T> entity, List<String> properties, String rsql);
-	public List<T> queryWhere(Class<T> entity, String rsql, Integer page, Integer pageSize);
+	public T querySingle(Class<T> entity, List<String> properties, String rsql);
+	
+	public List<T> queryWhere(Class<T> entity, List<String> properties, String rsql, Integer page, Integer pageSize);
 }

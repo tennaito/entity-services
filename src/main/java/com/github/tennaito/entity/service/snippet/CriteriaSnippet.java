@@ -21,29 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.github.tennaito.entity.service;
+package com.github.tennaito.entity.service.snippet;
 
-import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaQuery;
+
 
 /**
  * @author Antonio Rabelo
  *
- * @param <T>
+ * @param <R> Result class
+ * @param <T> Entity class
  */
-public interface EntityQueryService<T> extends EssentialEntityQueryService<T> {
-
-	public long count(Class<T> entity);
+public interface CriteriaSnippet<R, T> {
+	public boolean validate() throws IllegalArgumentException;
 	
-	public T querySingle(Class<T> entity);
-	public T querySingle(Class<T> entity, String rsql);
-	public T querySingle(Class<T> entity, List<String> properties);
-
-	public List<T> queryPartial(Class<T> entity, List<String> properties);	
-	public List<T> queryPartial(Class<T> entity, List<String> properties, Integer page, Integer pageSize);
-	public List<T> queryAll(Class<T> entity);	
-	public List<T> queryAll(Class<T> entity, Integer page, Integer pageSize);
-
-	public List<T> queryWhere(Class<T> entity, String rsql);
-	public List<T> queryWhere(Class<T> entity, List<String> properties, String rsql);
-	public List<T> queryWhere(Class<T> entity, String rsql, Integer page, Integer pageSize);
+	public CriteriaQuery<R> modify(CriteriaQuery<R> criteria, Class<T> entity, EntityManager manager);
+	
+	public TypedQuery<R> configure(TypedQuery<R> query);
 }
