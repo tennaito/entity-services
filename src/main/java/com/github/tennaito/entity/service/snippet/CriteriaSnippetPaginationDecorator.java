@@ -23,13 +23,7 @@
  */
 package com.github.tennaito.entity.service.snippet;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
-import javax.persistence.criteria.Selection;
 
 /**
  * @author Antonio Rabelo
