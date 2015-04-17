@@ -86,13 +86,18 @@ public abstract class AbstractCriteriaSnippetDecorator<R, T> implements Criteria
 	public TypedQuery<R> configure(TypedQuery<R> query) {
 		return this.snippetToBeDecorated.configure(query);
 	}
-	
-	protected static <A> Root<A> findRoot(CriteriaQuery<?> query, Class<?> clazz) {
-		for (Root<?> r : query.getRoots()) {
-			if (clazz.equals(r.getJavaType())) {
-				return (Root<A>) r.as(clazz);
+
+	protected static Root<?> findRoot(CriteriaQuery<?> query, Class<?> clazz) {
+		Root root = null;
+		if (query.getRoots().isEmpty()) {
+			root = query.from(clazz);
+		} else {
+			for (Root<?> r : query.getRoots()) {
+				if (clazz.equals(r.getJavaType())) {
+					root = (Root)r.as(clazz);
+				}
 			}
 		}
-		return (Root<A>) query.getRoots().iterator().next();
+		return root;
 	}	
 }
