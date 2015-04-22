@@ -24,11 +24,21 @@
 package com.github.tennaito.entity.service.data;
 
 /**
+ * TransformationStrategy.
+ * 
+ * Interface that defines the transformation method.
+ * 
  * @author Antonio Rabelo
  *
  * @param <T> Object 'to' that is the result.
  * @param <F> Object 'from' that is the base.
  */
 public interface TransformationStrategy<T, F> {
+	/**
+	 * Transforms the object <F> into object <T>
+	 * 
+	 * @param from <F> Object to be transformed.
+	 * @return     Transformed Object type <T>. 
+	 */
 	public T transform(F from);
 }

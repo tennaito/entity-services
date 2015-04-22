@@ -31,16 +31,28 @@ import java.io.Serializable;
 import java.util.Map;
 
 /**
+ * EntityStateStrategy.
+ * 
+ * Responsible to transform an Entity/Pojo object type into EntityState.
+ * 
  * @author Antonio Rabelo
  *
  * @param <T> Entity type.
  */
 public class EntityStateStrategy<T> extends DefaultTransformation<EntityState, T> implements TransformationStrategy<EntityState, T> {
 
+	/**
+	 * Constructor.
+	 * 
+	 * @param maxDepth Max depth the recursion can go when parsing an object.
+	 */
 	public EntityStateStrategy(int maxDepth) {
 		super(maxDepth);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.github.tennaito.entity.service.data.DefaultTransformation#specificTransformation(java.lang.Object, java.util.Map)
+	 */
 	@Override
 	protected Object specificTransformation(Object from, Map<Object, Object> cache) {
 		if (!this.acceptType(from)) {
@@ -62,11 +74,21 @@ public class EntityStateStrategy<T> extends DefaultTransformation<EntityState, T
 		return result;
 	}
 	
+	/* (non-Javadoc)
+	 * @see com.github.tennaito.entity.service.data.DefaultTransformation#acceptType(java.lang.Object)
+	 */
 	@Override
 	protected boolean acceptType(Object object) {
 		return object != null && this.isPojo(object);
 	}
 	
+	/**
+	 * Verifies if the object is a Pojo.
+	 * 
+	 * @param object Object instance.
+	 * @return true if it is not primitive, not java.lang, if it is serializable and has som properties.
+	 * 		   false otherwise. 
+	 */
 	protected boolean isPojo(Object object) {
 		boolean result = false;
 		try {

@@ -30,16 +30,28 @@ import java.beans.PropertyDescriptor;
 import java.util.Map;
 
 /**
+ * EntityStrategy.
+ * 
+ * Responsible to transform an EntityState object into the former Entity/Pojo object.
+ * 
  * @author Antonio Rabelo
  *
  * @param <T> EntityState type.
  */
 public class EntityStrategy<T> extends DefaultTransformation<T, EntityState> implements TransformationStrategy<T, EntityState> {
 
+	/**
+	 * Constructor.
+	 * 
+	 * @param maxDepth Max depth the recursion can go when parsing an object.
+	 */
 	public EntityStrategy(int maxDepth) {
 		super(maxDepth);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.github.tennaito.entity.service.data.DefaultTransformation#specificTransformation(java.lang.Object, java.util.Map)
+	 */
 	@Override
 	protected Object specificTransformation(Object from, Map<Object, Object> cache) {
 		if (!this.acceptType(from)) {
@@ -65,6 +77,9 @@ public class EntityStrategy<T> extends DefaultTransformation<T, EntityState> imp
 		return result;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.github.tennaito.entity.service.data.DefaultTransformation#acceptType(java.lang.Object)
+	 */
 	@Override
 	protected boolean acceptType(Object object) {
 		return object != null && EntityState.class.isAssignableFrom(object.getClass());		

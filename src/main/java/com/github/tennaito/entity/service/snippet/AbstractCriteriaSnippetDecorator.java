@@ -42,7 +42,7 @@ public abstract class AbstractCriteriaSnippetDecorator<R, T> implements Criteria
 	protected final CriteriaSnippet<R, T> snippetToBeDecorated;
 	
 	/**
-	 * Constructor
+	 * Constructor.
 	 * 
 	 * @param snippet CriteriaSnippet to be decorated.
 	 */
@@ -87,6 +87,13 @@ public abstract class AbstractCriteriaSnippetDecorator<R, T> implements Criteria
 		return this.snippetToBeDecorated.configure(query);
 	}
 
+	/**
+	 * Find the Root of the criteria query.
+	 * 
+	 * @param query criteria query.
+	 * @param clazz Java type of the root you want.
+	 * @return Root of the criteria query.
+	 */
 	protected static Root<?> findRoot(CriteriaQuery<?> query, Class<?> clazz) {
 		Root root = null;
 		if (query.getRoots().isEmpty()) {
@@ -95,6 +102,7 @@ public abstract class AbstractCriteriaSnippetDecorator<R, T> implements Criteria
 			for (Root<?> r : query.getRoots()) {
 				if (clazz.equals(r.getJavaType())) {
 					root = (Root)r.as(clazz);
+					break;
 				}
 			}
 		}

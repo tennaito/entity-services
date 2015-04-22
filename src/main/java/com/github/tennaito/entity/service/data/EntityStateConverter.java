@@ -26,14 +26,43 @@ package com.github.tennaito.entity.service.data;
 import java.util.Collection;
 
 /**
+ * Interface that defined the transformation methods.
+ * 
  * @author Antonio Rabelo
  *
- * @param <T>
+ * @param <T> Entity Type
  */
 public interface EntityStateConverter<T> {
-	public EntityState createState(T entity);
-	public Collection<EntityState> createStateList(Collection<T> entityList);
 	
+	/**
+	 * Create an EntityState from an Entity. 
+	 * 
+	 * @param entity Entity type.
+	 * @return An EntityState.
+	 */
+	public EntityState createState(T entity);
+	
+	/**
+	 * Create an EntityState List from an Entity List.
+	 * 
+	 * @param entityList Entity List
+	 * @return EntityState List.
+	 */
+	public Collection<EntityState> createStateList(Collection<T> entityList);
+
+	/**
+	 * Create an Entity from an EntityState. 
+	 * 
+	 * @param state EntityState.
+	 * @return An Entity.
+	 */	
 	public T createEntity(EntityState state);
+	
+	/**
+	 * Create an Entity List from an EntityState List.
+	 * 
+	 * @param stateList EntityState List
+	 * @return Entity List.
+	 */
 	public Collection<T> createEntityList(Collection<EntityState> stateList);
 }

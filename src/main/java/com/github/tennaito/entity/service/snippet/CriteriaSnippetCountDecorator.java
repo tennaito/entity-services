@@ -28,6 +28,8 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 
 /**
+ * Decorate with count function.
+ * 
  * @author Antonio Rabelo
  *
  * @param <T> Entity Type

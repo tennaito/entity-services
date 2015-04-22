@@ -35,21 +35,26 @@ import cz.jirutka.rsql.parser.ast.Node;
 import cz.jirutka.rsql.parser.ast.RSQLVisitor;
 
 /**
+ * Decorate Where clause with RSQL string.
+ * 
  * @author Antonio Rabelo
  *
  * @param <R> Result Type 
  * @param <T> Entity Type
  */
-public class CriteriaSnippetRsqlDecorator<R, T> extends AbstractCriteriaSnippetDecorator<R, T> {
+public class CriteriaSnippetWhereRsqlDecorator<R, T> extends AbstractCriteriaSnippetDecorator<R, T> {
 	
+	/**
+	 * Rsql condition.
+	 */
 	private final String rsql;
 
 	/**
-	 * Constructor
+	 * Constructor.
 	 * 
 	 * @param snippet CriteriaSnippet to be decorated.
 	 */
-	public CriteriaSnippetRsqlDecorator(String rsql, CriteriaSnippet<R, T> snippet) {
+	public CriteriaSnippetWhereRsqlDecorator(String rsql, CriteriaSnippet<R, T> snippet) {
 		super(snippet);
 		this.rsql = rsql;
 	}
@@ -65,6 +70,14 @@ public class CriteriaSnippetRsqlDecorator<R, T> extends AbstractCriteriaSnippetD
 		return criteria;
 	}
 	
+	/**
+	 * Parse a rsql into it´s correspondent CriteriaQuery.
+	 * 
+	 * @param entity   Entity type.
+	 * @param rsql     RSQL string.
+	 * @param manager  EntityManager.
+	 * @return         CriteriaQuery from the rsql.
+	 */
 	protected CriteriaQuery parseRsql(Class<T> entity, String rsql, EntityManager manager) {
 		// Create the JPA Visitor for unknown entity
 		RSQLVisitor<CriteriaQuery<T>, EntityManager> visitor 

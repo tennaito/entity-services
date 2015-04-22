@@ -28,6 +28,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * EntityState class responsible to store an object state.
+ * 
  * @author Antonio Rabelo
  */
 public class EntityState implements Serializable {
@@ -37,19 +39,47 @@ public class EntityState implements Serializable {
 	 */
 	private static final long serialVersionUID = 4325863376241569764L;
 
+	/**
+	 * Single name of the object class.
+	 */
 	private final String name;
+	
+	/**
+	 * Original class. 
+	 */
 	private final Class<?> clazz;
+	
+	/**
+	 * All public accessible properties. 
+	 */
 	private Map<String, Object> properties = new HashMap<String, Object>();
 	
+	/**
+	 * Constructor.
+	 * 
+	 * @param clazz Object class type. 
+	 */
 	public EntityState(Class<?> clazz) {
 		this.clazz = clazz;
 		this.name = clazz.getSimpleName();
 	}
 	
+	/**
+	 * Put the name and value of an object property.
+	 * 
+	 * @param name  Name of the property.
+	 * @param value Value of the property.
+	 */
 	public void put(String name, Object value) {
 		properties.put(name, value);
 	}
 	
+	/**
+	 * Get the value of the specified property.
+	 * 
+	 * @param name  Name of the property.
+	 * @return      The value of the property.
+	 */
 	public <T> T get(String name) {
 		if (!properties.containsKey(name)) {
 			throw new IllegalArgumentException("Undefined property from EntityResult " + getName());
@@ -57,14 +87,26 @@ public class EntityState implements Serializable {
 		return (T)properties.get(name);
 	}
 	
+	/**
+	 * Gets the original class type.
+	 * 
+	 * @return Original class type of the former object.
+	 */
 	public Class<?> getOriginalType() {
 		return this.clazz;
 	}
 	
+	/**
+	 * Gets the simple name of the object class.
+	 * @return Simple name of the object class.
+	 */
 	public String getName() {
 		return this.name;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -75,6 +117,9 @@ public class EntityState implements Serializable {
 		return result;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)

@@ -35,7 +35,7 @@ import com.github.tennaito.entity.service.snippet.CriteriaSnippet;
 import com.github.tennaito.entity.service.snippet.CriteriaSnippetCountDecorator;
 import com.github.tennaito.entity.service.snippet.CriteriaSnippetPaginationDecorator;
 import com.github.tennaito.entity.service.snippet.CriteriaSnippetPartialDecorator;
-import com.github.tennaito.entity.service.snippet.CriteriaSnippetRsqlDecorator;
+import com.github.tennaito.entity.service.snippet.CriteriaSnippetWhereRsqlDecorator;
 
 /**
  * DefaultEntityQueryService.
@@ -76,19 +76,46 @@ public class DefaultEntityQueryService<T> extends AbstractEntityQueryService<T> 
 		return this.buildEntityQuery(entity, properties, rsql, page, pageSize).getResultList();
 	}
 	
+	/**
+	 * Build a entity query with where condition, partial properties and pagination.
+	 * 
+	 * @param entity     Entity class type.
+	 * @param properties List of properties of the partial list.
+	 * @param rsql       RSQL string for where clause.
+	 * @param page       Page number (starts with 1).
+	 * @param pageSize   Page size   (starts with 1).
+	 * @return           Query with applied algorithms.
+	 */
 	protected TypedQuery<T> buildEntityQuery(Class<T> entity, List<String> properties, String rsql, Integer page, Integer pageSize) {
-		CriteriaSnippetRsqlDecorator<T, T> rsqlSnippet = new CriteriaSnippetRsqlDecorator<T, T>(rsql, null);
+		CriteriaSnippetWhereRsqlDecorator<T, T> rsqlSnippet = new CriteriaSnippetWhereRsqlDecorator<T, T>(rsql, null);
 		CriteriaSnippetPartialDecorator<T, T> partialSnippet = new CriteriaSnippetPartialDecorator<T, T>(properties, rsqlSnippet);
 		CriteriaSnippetPaginationDecorator<T, T> paginationSnippet = new CriteriaSnippetPaginationDecorator<T, T>(page, pageSize, partialSnippet);
 		return this.<T>buildQueryTemplateMethod(entity, entity, paginationSnippet);
 	}
 	
+	/**
+	 * Build a count query with where condition.
+	 * 
+	 * @param entity  Entity class type.
+	 * @param rsql    RSQL string for where clause.
+	 * @return        Query with applied algorithms.
+	 */
 	protected TypedQuery<Long> buildCountQuery(Class<T> entity, String rsql) {
-		CriteriaSnippetRsqlDecorator<Long, T> rsqlSnippet = new CriteriaSnippetRsqlDecorator<Long, T>(rsql, null);
+		CriteriaSnippetWhereRsqlDecorator<Long, T> rsqlSnippet = new CriteriaSnippetWhereRsqlDecorator<Long, T>(rsql, null);
 		CriteriaSnippetCountDecorator<T> countSnippet = new CriteriaSnippetCountDecorator<T>(rsqlSnippet);
 		return this.<Long>buildQueryTemplateMethod(Long.class, entity, countSnippet);
 	}
 
+	/**
+	 * Build a query template method.
+	 * 
+	 * @param resultClass Result class type.
+	 * @param entity      Entity class type.
+	 * @param snippet     Algorithm snippet.
+	 * @return            Builded query defined by the algorithm snippet.
+	 * @throws IllegalArgumentException 
+	 * 					  When entity is null.
+	 */
 	protected <R> TypedQuery<R> buildQueryTemplateMethod(Class<R> resultClass, Class<T> entity, CriteriaSnippet<R,T> snippet) {
 		TypedQuery<R> query = null;
 

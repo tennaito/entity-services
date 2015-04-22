@@ -27,17 +27,42 @@ import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaQuery;
 
-
 /**
+ * CriteriaSnippet.
+ * 
+ * Interface to modify a criteria query.
+ * 
  * @author Antonio Rabelo
  *
  * @param <R> Result class
  * @param <T> Entity class
  */
 public interface CriteriaSnippet<R, T> {
+	/**
+	 * Validate the query against some conditions.
+	 * 
+	 * @return true is conditions are satisfied, false otherwise.
+	 * 
+	 * @throws IllegalArgumentException
+	 * 				When conditions are not satisfied.
+	 */
 	public boolean validate() throws IllegalArgumentException;
 	
+	/**
+	 * Modify a CriteriaQuery with an specific algorithm.
+	 * 
+	 * @param criteria CriteriaQuery to be modified.
+	 * @param entity   Entity class.
+	 * @param manager  EntityManager instance.
+	 * @return		   Modified CriteriaQuery.
+	 */
 	public CriteriaQuery<R> modify(CriteriaQuery<R> criteria, Class<T> entity, EntityManager manager);
 	
+	/**
+	 * Configure the TypedQuery that is the result of the criteria query.
+	 * 
+	 * @param query TypedQuery derived from the CriteriaQuery.
+	 * @return      Modified TypedQuery.
+	 */
 	public TypedQuery<R> configure(TypedQuery<R> query);
 }

@@ -28,19 +28,37 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 /**
+ * Default transformation parser.
+ * 
  * @author Antonio Rabelo
  *
  * @param <T> Object 'to' that is the result.
  * @param <F> Object 'from' that is the base.
  */
 public abstract class DefaultTransformation<T, F> implements TransformationStrategy<T, F> {
+	
+	/**
+	 * Max depth the the recursive algorithm will descend into the object graph. 
+	 */
 	protected final int maxDepth;	
+	
+	/**
+	 * Depth counter. 
+	 */
 	protected int depth = 0;
 	
+	/**
+	 * Constructor.
+	 */
 	public DefaultTransformation() {
 		this(0);
 	}
 	
+	/**
+	 * Constructor
+	 * 
+	 * @param maxDepth Max depth that the algorithm will descend in the object graph. 
+	 */
 	public DefaultTransformation(int maxDepth) {
 		if (maxDepth < 0) {
 			throw new IllegalArgumentException(
@@ -49,10 +67,20 @@ public abstract class DefaultTransformation<T, F> implements TransformationStrat
 		this.maxDepth = maxDepth;
 	}
 	
+	/* (non-Javadoc)
+	 * @see com.github.tennaito.entity.service.data.TransformationStrategy#transform(java.lang.Object)
+	 */
 	public T transform(F from) {
 		return (T)cachedTransform(from, new WeakHashMap<Object, Object>());
 	}
 	
+	/**
+	 * Caches transformation to evict dependency cycle.
+	 *  
+	 * @param from  Object instance to be parsed.
+	 * @param cache Map cache to evict dependency cycle.
+	 * @return Object transformed.
+	 */
 	protected Object cachedTransform(Object from, Map<Object, Object> cache) {
 		Object result = null;
 		if (cache.containsKey(from)) {
@@ -64,10 +92,29 @@ public abstract class DefaultTransformation<T, F> implements TransformationStrat
 		return result;
 	}
 
+	/**
+	 * Defines the specific transformation algorithm for parsing a single object.
+	 * 
+	 * @param from  Object to be transformed.
+	 * @param cache Map cache to evict dependency cycle.
+	 * @return      Object transformed.
+	 */
 	protected abstract Object specificTransformation(Object from, Map<Object, Object> cache);
 	
+	/**
+	 * Verify is an object has the acceptable type.
+	 * 
+	 * @param object Object instance.
+	 * @return true if it has acceptable type, false otherwise.
+	 */
 	protected abstract boolean acceptType(Object object);
 
+	/**
+	 * Verify in an object is able to be parsed.
+	 * 
+	 * @param object Object instance.
+	 * @return true if it is able, false if not.
+	 */
 	protected boolean acceptParse(Object object) {
 		return (object.getClass().isArray()) ||
 			   (object instanceof Collection) || 
@@ -75,6 +122,15 @@ public abstract class DefaultTransformation<T, F> implements TransformationStrat
 			   acceptType(object);
 	}
 	
+	/**
+	 * Parse an Object Sibling.
+	 * 
+	 * @param sibling Object sibling.
+	 * @param cache   Map cache to evict dependency cycle.
+	 * @return        Parsed Object.
+	 * @throws ReflectiveOperationException
+	 * 				  When the reflection goes wrong. 
+	 */
 	protected Object parseSiblings(Object sibling, Map<Object, Object> cache) throws ReflectiveOperationException  {
 		Object result = null;
 		++depth;
@@ -96,6 +152,15 @@ public abstract class DefaultTransformation<T, F> implements TransformationStrat
 		return result;
 	}
 	
+	/**
+	 * Parse all Array children.
+	 * 
+	 * @param sibling  Array siblings.
+	 * @param cache    Map cache to evict dependency cycle.
+	 * @return         Parsed Array.
+	 * @throws ReflectiveOperationException
+	 * 				  When the reflection goes wrong. 
+	 */
 	protected Object[] parseSiblingsArray(Object[] sibling, Map<Object, Object> cache) throws ReflectiveOperationException {
 		Object[] result = new Object[sibling.length];
 		for (int i = 0; i < sibling.length; i++) {
@@ -104,6 +169,15 @@ public abstract class DefaultTransformation<T, F> implements TransformationStrat
 		return result;
 	}
 	
+	/**
+	 * Parse all Collection children.
+	 * 
+	 * @param sibling Collection siblings.
+	 * @param cache   Map cache to evict dependency cycle.
+	 * @return        Parsed Collection.
+	 * @throws ReflectiveOperationException
+	 * 				  When the reflection goes wrong.
+	 */
 	protected Collection<Object> parseSiblingsCollection(Collection sibling, Map<Object, Object> cache) throws ReflectiveOperationException {
 		Collection<Object> result = sibling.getClass().newInstance();
 		for (Object object : sibling) {
@@ -112,6 +186,15 @@ public abstract class DefaultTransformation<T, F> implements TransformationStrat
 		return result;
 	}
 	
+	/**
+	 * Parse all Map children.
+	 * 
+	 * @param sibling Map siblings.
+	 * @param cache   Map cache to evict dependency cycle.
+	 * @return        Parsed Map.
+	 * @throws ReflectiveOperationException 
+	 * 				  When the reflection goes wrong.
+	 */
 	protected Map<Object, Object> parseSiblingsMap(Map<Object, Object> sibling, Map<Object, Object> cache) throws ReflectiveOperationException {
 		Map<Object, Object> result = sibling.getClass().newInstance();
 		for (Map.Entry<Object, Object> entry : sibling.entrySet()) {

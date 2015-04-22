@@ -32,6 +32,8 @@ import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Selection;
 
 /**
+ * Decorates with partial properties list.
+ * 
  * @author Antonio Rabelo
  *
  * @param <R> Result Type 
@@ -39,6 +41,9 @@ import javax.persistence.criteria.Selection;
  */
 public class CriteriaSnippetPartialDecorator<R, T> extends AbstractCriteriaSnippetDecorator<R, T> {
 	
+	/**
+	 * Properties list.
+	 */
 	private final List<String> properties;
 	
 	/**
@@ -62,6 +67,14 @@ public class CriteriaSnippetPartialDecorator<R, T> extends AbstractCriteriaSnipp
 		return criteria;
 	}
 	
+	/**
+	 * Creates a List of Selection from the properties list.
+	 * 
+	 * @param criteria   CriteriaQuery instance.
+	 * @param entity     Entity class that has the properties.
+	 * @param properties List of the selected properties.
+	 * @return           List of Selections.
+	 */
 	private List<Selection<?>> createSelectionList(CriteriaQuery<R> criteria, Class<T> entity, List<String> properties) {
 		Root<?> root = findRoot(criteria, entity);
 		List<Selection<?>> selectedProperties = new ArrayList<Selection<?>>();

@@ -43,6 +43,9 @@ public abstract class AbstractEntityQueryService<T> implements EntityQueryServic
 	 */
 	private final EntityManager manager;
 	
+	/**
+	 * QueryConfiguration instance.
+	 */
 	private QueryConfiguration queryConfiguration;
 
 	/**
@@ -57,6 +60,12 @@ public abstract class AbstractEntityQueryService<T> implements EntityQueryServic
 		this.manager = manager;
 	}
 	
+	/**
+	 * Configure the EntityQueryService with some query configuration logic. 
+	 * 
+	 * @param queryConfiguration QueryConfiguration instance.
+	 * @return the owner object.
+	 */
 	public AbstractEntityQueryService<T> configure(QueryConfiguration queryConfiguration) {
 		this.queryConfiguration = queryConfiguration;
 		return this;
@@ -71,6 +80,11 @@ public abstract class AbstractEntityQueryService<T> implements EntityQueryServic
 		return this.manager;
 	}
 	
+	/**
+	 * Returns the query configuration object.
+	 * 
+	 * @return QueryConfiguration instance.
+	 */
 	protected QueryConfiguration getQueryConfiguration() {
 		return this.queryConfiguration;
 	}

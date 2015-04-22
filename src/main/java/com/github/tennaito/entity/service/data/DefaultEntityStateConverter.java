@@ -27,27 +27,51 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
+ * Default converter for Entity Types to EntityState and vice-versa.
+ * 
  * @author Antonio Rabelo
  *
+ * @param <T> Entity Type.
  */
 public class DefaultEntityStateConverter<T> implements EntityStateConverter<T> {
 	
+	/**
+	 * Strategy to transform an Entity type into an EntityState.
+	 */
 	protected final TransformationStrategy<EntityState, T> toEntityState;
+	
+	/**
+	 * Strategy to transform an EntityState into an Entity Type.
+	 */
 	protected final TransformationStrategy<T, EntityState> toEntity;
 	
+	/**
+	 * Constructor. 
+	 */
 	public DefaultEntityStateConverter() {
 		this(0);
 	}
 
+	/**
+	 * Constructor
+	 * 
+	 * @param maxDepth Max depth that the algorithm will descend in the object graph.
+	 */
 	public DefaultEntityStateConverter(int maxDepth) {
 		this.toEntityState = new EntityStateStrategy<T>(maxDepth);
 		this.toEntity = new EntityStrategy<T>(maxDepth);;
 	}
 	
+	/* (non-Javadoc)
+	 * @see com.github.tennaito.entity.service.data.EntityStateConverter#createState(java.lang.Object)
+	 */
 	public EntityState createState(T entity) {
 		return this.toEntityState.transform(entity);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.github.tennaito.entity.service.data.EntityStateConverter#createStateList(java.util.Collection)
+	 */
 	public Collection<EntityState> createStateList(Collection<T> entityList) {
 		Collection<EntityState> result = new ArrayList<EntityState>();
 		for (T element : entityList) {
@@ -56,10 +80,16 @@ public class DefaultEntityStateConverter<T> implements EntityStateConverter<T> {
 		return result;
 	}
 	
+	/* (non-Javadoc)
+	 * @see com.github.tennaito.entity.service.data.EntityStateConverter#createEntity(com.github.tennaito.entity.service.data.EntityState)
+	 */
 	public T createEntity(EntityState state) {
 		return this.toEntity.transform(state);
 	}
 	
+	/* (non-Javadoc)
+	 * @see com.github.tennaito.entity.service.data.EntityStateConverter#createEntityList(java.util.Collection)
+	 */
 	public Collection<T> createEntityList(Collection<EntityState> stateList) {
 		Collection<T> result = new ArrayList<T>();
 		for (EntityState element : stateList) {

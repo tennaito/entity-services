@@ -26,6 +26,8 @@ package com.github.tennaito.entity.service.snippet;
 import javax.persistence.TypedQuery;
 
 /**
+ * Decorated with pagination.
+ * 
  * @author Antonio Rabelo
  *
  * @param <R> Result Type 
@@ -33,11 +35,18 @@ import javax.persistence.TypedQuery;
  */
 public class CriteriaSnippetPaginationDecorator<R, T> extends AbstractCriteriaSnippetDecorator<R, T> {
 	
+	/**
+	 * Page number (starts with 1).
+	 */
 	private final Integer page;
+	
+	/**
+	 * Page size (starts with 1). 
+	 */
 	private final Integer pageSize;
 
 	/**
-	 * Constructor
+	 * Constructor.
 	 * 
 	 * @param snippet CriteriaSnippet to be decorated.
 	 */

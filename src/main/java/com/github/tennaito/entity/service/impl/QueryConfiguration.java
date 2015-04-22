@@ -26,9 +26,18 @@ package com.github.tennaito.entity.service.impl;
 import javax.persistence.Query;
 
 /**
+ * QueryConfiguration.
+ * 
+ * Interface with method to apply new configuration.
+ * 
  * @author Antonio Rabelo
- *
  */
 public interface QueryConfiguration {
+	
+	/**
+	 * Apply a configuration.
+	 * 
+	 * @param query Query to be configured.
+	 */
 	public void applyConfiguration(Query query);
 }
