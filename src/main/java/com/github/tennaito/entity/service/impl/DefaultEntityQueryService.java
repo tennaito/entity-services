@@ -126,7 +126,7 @@ public class DefaultEntityQueryService<T> extends AbstractEntityQueryService<T> 
 		if(snippet.validate()) {
 			CriteriaBuilder builder = getEntityManager().getCriteriaBuilder();
 			CriteriaQuery<R> criteria = builder.createQuery(resultClass);
-			criteria = snippet.modify(criteria, entity, getEntityManager());
+			criteria = snippet.modify(criteria, resultClass, entity, getEntityManager());
 			query = getEntityManager().createQuery(criteria);
 			query = snippet.configure(query);
 			if (this.getQueryConfiguration() != null) {

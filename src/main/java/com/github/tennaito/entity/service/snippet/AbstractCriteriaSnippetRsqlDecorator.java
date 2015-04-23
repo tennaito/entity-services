@@ -23,35 +23,59 @@
  */
 package com.github.tennaito.entity.service.snippet;
 
+import java.lang.reflect.Array;
+
 import javax.persistence.EntityManager;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+
+import com.github.tennaito.rsql.jpa.JpaPredicateVisitor;
+
+import cz.jirutka.rsql.parser.RSQLParser;
+import cz.jirutka.rsql.parser.ast.Node;
+import cz.jirutka.rsql.parser.ast.RSQLVisitor;
 
 /**
- * Decorate with count function.
+ * Decorate with RSQL string.
  * 
  * @author Antonio Rabelo
  *
+ * @param <R> Result Type 
  * @param <T> Entity Type
  */
-public class CriteriaSnippetCountDecorator<T> extends AbstractCriteriaSnippetDecorator<Long, T> {
+public abstract class AbstractCriteriaSnippetRsqlDecorator<R, T> extends AbstractCriteriaSnippetDecorator<R, T> {
 	
 	/**
-	 * Constructor
+	 * Rsql condition.
+	 */
+	protected final String rsql;
+
+	/**
+	 * Constructor.
 	 * 
 	 * @param snippet CriteriaSnippet to be decorated.
 	 */
-	public CriteriaSnippetCountDecorator(CriteriaSnippet<Long, T> snippet) {
+	public AbstractCriteriaSnippetRsqlDecorator(String rsql, CriteriaSnippet<R, T> snippet) {
 		super(snippet);
+		this.rsql = rsql;
 	}
-
-	/* (non-Javadoc)
-	 * @see com.github.tennaito.entity.service.snippet.AbstractCriteriaSnippetDecorator#modify(javax.persistence.criteria.CriteriaQuery, java.lang.Class, java.lang.Class, javax.persistence.EntityManager)
+	
+	/**
+	 * Parse a rsql into it´s correspondent Predicate.
+	 * 
+	 * @param entity   Entity type.
+	 * @param rsql     RSQL string.
+	 * @param manager  EntityManager.
+	 * @return         Predicate from the rsql.
 	 */
-	public CriteriaQuery<Long> modify(CriteriaQuery<Long> criteria, Class<Long> resultClass, Class<T> entity, EntityManager manager) {
-		criteria = super.modify(criteria, resultClass, entity, manager);
-		CriteriaBuilder builder = manager.getCriteriaBuilder();
-		criteria.select(builder.count(findRoot(criteria, entity)));
-		return criteria;
+	protected Predicate parseRsql(Class<T> entity, String rsql, EntityManager manager) {
+		// Create the JPA Visitor for unknown entity
+		RSQLVisitor<Predicate, EntityManager> visitor 
+			= new JpaPredicateVisitor<T>((T[])Array.newInstance(entity, 0));
+
+		// Parse a RSQL into a Node
+		Node rootNode = new RSQLParser().parse(rsql);
+
+		// Visit the node to retrieve CriteriaQuery
+		return rootNode.accept(visitor, manager);
 	}
 }

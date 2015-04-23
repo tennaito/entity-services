@@ -51,12 +51,13 @@ public interface CriteriaSnippet<R, T> {
 	/**
 	 * Modify a CriteriaQuery with an specific algorithm.
 	 * 
-	 * @param criteria CriteriaQuery to be modified.
-	 * @param entity   Entity class.
-	 * @param manager  EntityManager instance.
-	 * @return		   Modified CriteriaQuery.
+	 * @param criteria    CriteriaQuery to be modified.
+	 * @param resultClass ResultClass.
+	 * @param entity      Entity class.
+	 * @param manager     EntityManager instance.
+	 * @return		      Modified CriteriaQuery.
 	 */
-	public CriteriaQuery<R> modify(CriteriaQuery<R> criteria, Class<T> entity, EntityManager manager);
+	public CriteriaQuery<R> modify(CriteriaQuery<R> criteria, Class<R> resultClass, Class<T> entity, EntityManager manager);
 	
 	/**
 	 * Configure the TypedQuery that is the result of the criteria query.

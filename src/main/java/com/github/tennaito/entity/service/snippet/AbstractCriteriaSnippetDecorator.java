@@ -53,8 +53,11 @@ public abstract class AbstractCriteriaSnippetDecorator<R, T> implements Criteria
 				public boolean validate() throws IllegalArgumentException {
 					return true;
 				}
-				public CriteriaQuery<R> modify(CriteriaQuery<R> criteria,
-						Class<T> entity, EntityManager manager) {
+				public CriteriaQuery<R> modify(
+						CriteriaQuery<R> criteria, 
+						Class<R> resultClass, 
+						Class<T> entity,
+						EntityManager manager) {
 					return criteria;
 				}
 				public TypedQuery<R> configure(TypedQuery<R> query) {
@@ -74,10 +77,10 @@ public abstract class AbstractCriteriaSnippetDecorator<R, T> implements Criteria
 	}
 
 	/* (non-Javadoc)
-	 * @see com.github.tennaito.entity.service.snippet.CriteriaSnippet#modify(javax.persistence.criteria.CriteriaQuery, java.lang.Class, javax.persistence.EntityManager)
+	 * @see com.github.tennaito.entity.service.snippet.CriteriaSnippet#modify(javax.persistence.criteria.CriteriaQuery, java.lang.Class, java.lang.Class, javax.persistence.EntityManager)
 	 */
-	public CriteriaQuery<R> modify(CriteriaQuery<R> criteria, Class<T> entity, EntityManager manager) {
-		return this.snippetToBeDecorated.modify(criteria, entity, manager);
+	public CriteriaQuery<R> modify(CriteriaQuery<R> criteria, Class<R> resultClass, Class<T> entity, EntityManager manager) {
+		return this.snippetToBeDecorated.modify(criteria,  resultClass, entity, manager);
 	}
 
 	/* (non-Javadoc)

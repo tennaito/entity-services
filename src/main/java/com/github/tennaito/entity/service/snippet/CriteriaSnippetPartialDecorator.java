@@ -57,10 +57,10 @@ public class CriteriaSnippetPartialDecorator<R, T> extends AbstractCriteriaSnipp
 	}
 
 	/* (non-Javadoc)
-	 * @see com.github.tennaito.entity.service.snippet.CriteriaSnippetDecorator#modify(javax.persistence.criteria.CriteriaQuery, java.lang.Class, javax.persistence.EntityManager)
+	 * @see com.github.tennaito.entity.service.snippet.AbstractCriteriaSnippetDecorator#modify(javax.persistence.criteria.CriteriaQuery, java.lang.Class, java.lang.Class, javax.persistence.EntityManager)
 	 */
-	public CriteriaQuery<R> modify(CriteriaQuery<R> criteria, Class<T> entity, EntityManager manager) {
-		criteria = super.modify(criteria, entity, manager);
+	public CriteriaQuery<R> modify(CriteriaQuery<R> criteria, Class<R> resultClass, Class<T> entity, EntityManager manager) {
+		criteria = super.modify(criteria, resultClass, entity, manager);
 		if (this.properties != null) {
 			criteria = criteria.multiselect(createSelectionList(criteria, entity, properties));
 		}

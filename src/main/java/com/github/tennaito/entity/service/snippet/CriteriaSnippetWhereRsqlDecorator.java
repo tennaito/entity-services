@@ -23,16 +23,10 @@
  */
 package com.github.tennaito.entity.service.snippet;
 
-import java.lang.reflect.Array;
-
 import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
-
-import com.github.tennaito.rsql.jpa.JpaCriteriaQueryVisitor;
-
-import cz.jirutka.rsql.parser.RSQLParser;
-import cz.jirutka.rsql.parser.ast.Node;
-import cz.jirutka.rsql.parser.ast.RSQLVisitor;
+import javax.persistence.criteria.Predicate;
 
 /**
  * Decorate Where clause with RSQL string.
@@ -42,12 +36,7 @@ import cz.jirutka.rsql.parser.ast.RSQLVisitor;
  * @param <R> Result Type 
  * @param <T> Entity Type
  */
-public class CriteriaSnippetWhereRsqlDecorator<R, T> extends AbstractCriteriaSnippetDecorator<R, T> {
-	
-	/**
-	 * Rsql condition.
-	 */
-	private final String rsql;
+public class CriteriaSnippetWhereRsqlDecorator<R, T> extends AbstractCriteriaSnippetRsqlDecorator<R, T> {
 
 	/**
 	 * Constructor.
@@ -55,38 +44,33 @@ public class CriteriaSnippetWhereRsqlDecorator<R, T> extends AbstractCriteriaSni
 	 * @param snippet CriteriaSnippet to be decorated.
 	 */
 	public CriteriaSnippetWhereRsqlDecorator(String rsql, CriteriaSnippet<R, T> snippet) {
-		super(snippet);
-		this.rsql = rsql;
+		super(rsql, snippet);
 	}
 
 	/* (non-Javadoc)
-	 * @see com.github.tennaito.entity.service.snippet.CriteriaSnippetDecorator#modify(javax.persistence.criteria.CriteriaQuery, java.lang.Class, javax.persistence.EntityManager)
+	 * @see com.github.tennaito.entity.service.snippet.AbstractCriteriaSnippetDecorator#modify(javax.persistence.criteria.CriteriaQuery, java.lang.Class, java.lang.Class, javax.persistence.EntityManager)
 	 */
-	public CriteriaQuery<R> modify(CriteriaQuery<R> criteria, Class<T> entity, EntityManager manager) {
-		criteria = super.modify(criteria, entity, manager);
+	public CriteriaQuery<R> modify(CriteriaQuery<R> criteria, Class<R> resultClass, Class<T> entity, EntityManager manager) {
+		criteria = super.modify(criteria, resultClass, entity, manager);
 		if (this.rsql != null) {
-			criteria = parseRsql(entity, rsql, manager);
+			criteria = buildRsqlWhereClause(resultClass, entity, rsql, manager);
 		}
 		return criteria;
 	}
 	
 	/**
-	 * Parse a rsql into it´s correspondent CriteriaQuery.
+	 * Build a Where clause from Rsql.
 	 * 
-	 * @param entity   Entity type.
-	 * @param rsql     RSQL string.
-	 * @param manager  EntityManager.
-	 * @return         CriteriaQuery from the rsql.
+	 * @param resultClass Result class type.
+	 * @param entity      Entity type.
+	 * @param rsql        RSQL string.
+	 * @param manager     EntityManager.
+	 * @return            CriteriaQuery from the rsql.
 	 */
-	protected CriteriaQuery parseRsql(Class<T> entity, String rsql, EntityManager manager) {
-		// Create the JPA Visitor for unknown entity
-		RSQLVisitor<CriteriaQuery<T>, EntityManager> visitor 
-			= new JpaCriteriaQueryVisitor<T>((T[])Array.newInstance(entity, 0));
-
-		// Parse a RSQL into a Node
-		Node rootNode = new RSQLParser().parse(rsql);
-
-		// Visit the node to retrieve CriteriaQuery
-		return rootNode.accept(visitor, manager);
+	protected CriteriaQuery<R> buildRsqlWhereClause(Class<R> resultClass, Class<T> entity, String rsql, EntityManager manager) {
+		Predicate predicate = parseRsql(entity, rsql, manager);
+    	CriteriaBuilder builder = manager.getCriteriaBuilder();
+    	CriteriaQuery<R> criteria = builder.createQuery(resultClass);
+    	return criteria.where(predicate);
 	}
 }
