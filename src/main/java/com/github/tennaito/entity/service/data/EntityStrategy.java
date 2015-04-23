@@ -42,6 +42,13 @@ public class EntityStrategy<T> extends DefaultTransformation<T, EntityState> imp
 
 	/**
 	 * Constructor.
+	 */
+	public EntityStrategy() {
+		super();
+	}
+	
+	/**
+	 * Constructor.
 	 * 
 	 * @param maxDepth Max depth the recursion can go when parsing an object.
 	 */
