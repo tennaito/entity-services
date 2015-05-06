@@ -38,7 +38,7 @@ import com.github.tennaito.test.jpa.entity.Item;
  */
 public class CriteriaSnippetDecoratorTest extends AbstractEntityServicesTest {
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected=NullPointerException.class)
 	public void testNoRoot() {
 		CriteriaSnippet<Long, Item> snippet = new AbstractCriteriaSnippetDecorator<Long, Item>(null) {
 			@Override
@@ -52,6 +52,8 @@ public class CriteriaSnippetDecoratorTest extends AbstractEntityServicesTest {
 			}
 		};
 		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
-		snippet.modify(manager.getCriteriaBuilder().createQuery(Long.class), Long.class, Item.class, manager);
+		CriteriaQuery<Long> criteria = manager.getCriteriaBuilder().createQuery(Long.class);
+		criteria.from(Item.class);
+		snippet.modify(criteria, Long.class, Item.class, manager);
 	}
 }
