@@ -25,7 +25,9 @@ package com.github.tennaito.test.jpa;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.assertFalse;
 
+import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Set;
 
@@ -83,11 +85,46 @@ public class EntityStateConverterTest extends AbstractEntityServicesTest {
 	
 	
 	@Test
-	public void testStateEquals() {
+	public void testStateEquals() throws Exception {
 		EntityState state1 = createState();
 		EntityState state2 = createState();
 		
+		// same reference
+		assertTrue(state1.equals(state1));
+		// same object
 		assertTrue(state1.equals(state2));
+		// not the same...
+		assertFalse(state1.equals(null));
+		assertFalse(state1.equals("teste"));
+		
+		String name = state1.getName();
+		Field f = state1.getClass().getDeclaredField("name");
+		f.setAccessible(true);
+		f.set(state1, null);
+		
+		assertFalse(state1.equals(state2));
+		f.set(state1, name);
+		f.setAccessible(false);		
+		
+		String description = state1.get("description");
+		state1.put("description", "fail");
+		
+		assertFalse(state1.equals(state2));
+		
+		state1.put("description", description);
+		
+		Field p = state1.getClass().getDeclaredField("properties");
+		p.setAccessible(true);
+		Object value = p.get(state1);
+		p.set(state1, null);
+		
+		assertFalse(state1.equals(state2));
+		p.set(state1, value);
+		p.setAccessible(false);				
+		
+		EntityState otherState = createStateFromId1(Item.class);
+		assertFalse(state1.equals(otherState));
+
 	}
 	
 	@Test
@@ -128,12 +165,16 @@ public class EntityStateConverterTest extends AbstractEntityServicesTest {
 	}
 	
 	private EntityState createState() {
-		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
-		EntityQueryService<InvoiceList> service = new DefaultEntityQueryService<InvoiceList>(manager);
-		InvoiceList invoice = service.querySingle(InvoiceList.class, "id==1");
-		
-		EntityStateConverter<InvoiceList> converter = new DefaultEntityStateConverter<InvoiceList>();
-		EntityState state   = converter.createState(invoice);
-		return state;
+		return createStateFromId1(InvoiceList.class);
 	}
+	
+	private <T> EntityState createStateFromId1(Class<T> type) {
+		EntityManager manager = EntityManagerFactoryInitializer.getEntityManagerFactory().createEntityManager();
+		EntityQueryService<T> service = new DefaultEntityQueryService<T>(manager);
+		T object = service.querySingle(type, "id==1");
+		
+		EntityStateConverter<T> converter = new DefaultEntityStateConverter<T>();
+		EntityState state   = converter.createState(object);
+		return state;
+	}	
 }
