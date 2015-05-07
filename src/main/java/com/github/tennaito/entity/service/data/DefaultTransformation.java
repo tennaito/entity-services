@@ -45,7 +45,7 @@ public abstract class DefaultTransformation<T, F> implements TransformationStrat
 	/**
 	 * Depth counter. 
 	 */
-	protected int depth = 0;
+	protected int depth = 1;
 	
 	/**
 	 * Constructor.
@@ -83,11 +83,11 @@ public abstract class DefaultTransformation<T, F> implements TransformationStrat
 	 */
 	protected Object cachedTransform(Object from, Map<Object, Object> cache) {
 		Object result = null;
-		if (cache.containsKey(from)) {
-			result = cache.get(from);
+		if (cache.containsKey(System.identityHashCode(from))) {
+			result = cache.get(System.identityHashCode(from));
 		} else {
 			result = specificTransformation(from, cache);
-			cache.put(from, result);
+			cache.put(System.identityHashCode(from), result);
 		}
 		return result;
 	}
@@ -116,10 +116,11 @@ public abstract class DefaultTransformation<T, F> implements TransformationStrat
 	 * @return true if it is able, false if not.
 	 */
 	protected boolean acceptParse(Object object) {
-		return (object.getClass().isArray()) ||
+		return (object != null) && 
+			   ((object.getClass().isArray()) ||
 			   (object instanceof Collection) || 
 			   (object instanceof Map) || 
-			   acceptType(object);
+			   acceptType(object));
 	}
 	
 	/**
@@ -133,10 +134,8 @@ public abstract class DefaultTransformation<T, F> implements TransformationStrat
 	 */
 	protected Object parseSiblings(Object sibling, Map<Object, Object> cache) throws ReflectiveOperationException  {
 		Object result = null;
-		++depth;
-		if (this.maxDepth == 0 || depth <= this.maxDepth) {
-			result = sibling;
-			if (acceptParse(sibling)) {
+		if (acceptParse(sibling)) {
+			if (this.maxDepth == 0 || depth < this.maxDepth) {
 				if (sibling.getClass().isArray()) {
 					result = parseSiblingsArray((Object[])sibling, cache);
 				} else if (sibling instanceof Collection) {
@@ -144,11 +143,14 @@ public abstract class DefaultTransformation<T, F> implements TransformationStrat
 				} else if (sibling instanceof Map) {
 					result = parseSiblingsMap((Map<Object, Object>)sibling, cache);
 				} else if (acceptType(sibling)) {
+					++depth;
 					result = cachedTransform(sibling, cache);
+					--depth;
 				}
 			}
+		} else {
+			result = sibling;
 		}
-		--depth;
 		return result;
 	}
 	

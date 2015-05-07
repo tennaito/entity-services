@@ -70,6 +70,7 @@ public class EntityStrategy<T> extends DefaultTransformation<T, EntityState> imp
 		Object     result = null;
 		try {
 			result = state.getOriginalType().newInstance();
+			cache.put(System.identityHashCode(from), result);			
 			BeanInfo info = Introspector.getBeanInfo(result.getClass());
 	        for (PropertyDescriptor pd : info.getPropertyDescriptors()) {
 	        	if (pd.getWriteMethod() != null) {

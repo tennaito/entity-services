@@ -63,9 +63,10 @@ public class EntityStateStrategy<T> extends DefaultTransformation<EntityState, T
 	@Override
 	protected Object specificTransformation(Object from, Map<Object, Object> cache) {
 		if (!this.acceptType(from)) {
-			throw new IllegalArgumentException("Invalid type, instance must have @javax.persistence.Entity annotation.");
+			throw new IllegalArgumentException("Invalid type, instance must be a Pojo.");
 		}
 		EntityState result = new EntityState(from.getClass());
+		cache.put(System.identityHashCode(from), result);
 		try {
 			BeanInfo info = Introspector.getBeanInfo(from.getClass());
 	        for (PropertyDescriptor pd : info.getPropertyDescriptors()) {

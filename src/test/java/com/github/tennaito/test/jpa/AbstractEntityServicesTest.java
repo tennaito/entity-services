@@ -27,9 +27,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
-import javax.persistence.Query;
 
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 import com.github.tennaito.test.jpa.entity.InvoiceList;
