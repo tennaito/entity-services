@@ -24,8 +24,8 @@
 package com.github.tennaito.test.jpa;
 
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
 
 import java.lang.reflect.Field;
 import java.util.Collection;

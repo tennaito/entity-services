@@ -86,20 +86,30 @@ public abstract class DefaultTransformation<T, F> implements TransformationStrat
 		if (cache.containsKey(System.identityHashCode(from))) {
 			result = cache.get(System.identityHashCode(from));
 		} else {
-			result = specificTransformation(from, cache);
-			cache.put(System.identityHashCode(from), result);
+			Object to = createTargetFromContext(from);
+			cache.put(System.identityHashCode(from), to);
+			result = specificTransformation(to, from, cache);
 		}
 		return result;
 	}
+	
+	/**
+	 * Factory method that instantiate the target object.
+	 * 
+	 * @param from the context of the target is the object that we want to transform.
+	 * @return Instance of the target object.
+	 */
+	protected abstract Object createTargetFromContext(Object from);
 
 	/**
 	 * Defines the specific transformation algorithm for parsing a single object.
 	 * 
+	 * @param to    Object where transformation will occur.
 	 * @param from  Object to be transformed.
 	 * @param cache Map cache to evict dependency cycle.
 	 * @return      Object transformed.
 	 */
-	protected abstract Object specificTransformation(Object from, Map<Object, Object> cache);
+	protected abstract Object specificTransformation(Object to, Object from, Map<Object, Object> cache);
 	
 	/**
 	 * Verify is an object has the acceptable type.

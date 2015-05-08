@@ -57,10 +57,10 @@ public class EntityStrategy<T> extends DefaultTransformation<T, EntityState> imp
 	}
 
 	/* (non-Javadoc)
-	 * @see com.github.tennaito.entity.service.data.DefaultTransformation#specificTransformation(java.lang.Object, java.util.Map)
+	 * @see com.github.tennaito.entity.service.data.DefaultTransformation#specificTransformation(java.lang.Object, java.lang.Object, java.util.Map)
 	 */
 	@Override
-	protected Object specificTransformation(Object from, Map<Object, Object> cache) {
+	protected Object specificTransformation(Object to, Object from, Map<Object, Object> cache) {
 		if (!this.acceptType(from)) {
 			throw new IllegalArgumentException(
 					"Invalid type, instance must be assignable to com.github.tennaito.entity.service.data.EntityState class.");
@@ -69,8 +69,7 @@ public class EntityStrategy<T> extends DefaultTransformation<T, EntityState> imp
 		EntityState state = (EntityState)from;
 		Object     result = null;
 		try {
-			result = state.getOriginalType().newInstance();
-			cache.put(System.identityHashCode(from), result);			
+			result = to;
 			BeanInfo info = Introspector.getBeanInfo(result.getClass());
 	        for (PropertyDescriptor pd : info.getPropertyDescriptors()) {
 	        	if (pd.getWriteMethod() != null) {
@@ -91,5 +90,21 @@ public class EntityStrategy<T> extends DefaultTransformation<T, EntityState> imp
 	@Override
 	protected boolean acceptType(Object object) {
 		return object != null && EntityState.class.isAssignableFrom(object.getClass());		
+	}
+
+	/* (non-Javadoc)
+	 * @see com.github.tennaito.entity.service.data.DefaultTransformation#createTargetFromContext(java.lang.Object)
+	 */
+	@Override
+	protected Object createTargetFromContext(Object from) {
+		Object entity = null;
+		try {
+			if (from != null) {
+				entity = ((EntityState)from).getOriginalType().newInstance();
+			}
+		} catch (ReflectiveOperationException e) {
+			throw new IllegalArgumentException(e);
+		}
+		return entity;
 	}
 }

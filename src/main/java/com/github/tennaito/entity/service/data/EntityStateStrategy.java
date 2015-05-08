@@ -58,15 +58,14 @@ public class EntityStateStrategy<T> extends DefaultTransformation<EntityState, T
 	}
 
 	/* (non-Javadoc)
-	 * @see com.github.tennaito.entity.service.data.DefaultTransformation#specificTransformation(java.lang.Object, java.util.Map)
+	 * @see com.github.tennaito.entity.service.data.DefaultTransformation#specificTransformation(java.lang.Object, java.lang.Object, java.util.Map)
 	 */
 	@Override
-	protected Object specificTransformation(Object from, Map<Object, Object> cache) {
-		if (!this.acceptType(from)) {
-			throw new IllegalArgumentException("Invalid type, instance must be a Pojo.");
+	protected Object specificTransformation(Object to, Object from, Map<Object, Object> cache) {
+		if (to == null || !this.acceptType(from)) {
+			throw new IllegalArgumentException("Invalid type, to and from instance must be a Pojo and not null.");
 		}
-		EntityState result = new EntityState(from.getClass());
-		cache.put(System.identityHashCode(from), result);
+		EntityState result = (EntityState)to;
 		try {
 			BeanInfo info = Introspector.getBeanInfo(from.getClass());
 	        for (PropertyDescriptor pd : info.getPropertyDescriptors()) {
@@ -112,5 +111,17 @@ public class EntityStateStrategy<T> extends DefaultTransformation<EntityState, T
 			result = false;
 		}
 		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.github.tennaito.entity.service.data.DefaultTransformation#createTargetFromContext(java.lang.Object)
+	 */
+	@Override
+	protected Object createTargetFromContext(Object from) {
+		Object state = null;
+		if (from != null) {
+			state = new EntityState(from.getClass());
+		}
+		return state;
 	}
 }
