@@ -58,8 +58,19 @@ public class DefaultEntityStateConverter<T> implements EntityStateConverter<T> {
 	 * @param maxDepth Max depth that the algorithm will descend in the object graph.
 	 */
 	public DefaultEntityStateConverter(int maxDepth) {
-		this.toEntityState = new EntityStateStrategy<T>(maxDepth);
-		this.toEntity = new EntityStrategy<T>(maxDepth);;
+		this(new EntityStateStrategy<T>(maxDepth), new EntityStrategy<T>(maxDepth));
+	}
+
+	/**
+	 * Constructor
+	 * 
+	 * @param toEntityState Transformation Strategy to convert an Entity to EntityState
+	 * @param toEntity      Transformation Strategy to convert an EntityState to Entity 
+	 */
+	public DefaultEntityStateConverter(TransformationStrategy<EntityState, T> toEntityState,
+                                       TransformationStrategy<T, EntityState> toEntity) {
+		this.toEntityState = toEntityState;
+		this.toEntity = toEntity;
 	}
 	
 	/* (non-Javadoc)

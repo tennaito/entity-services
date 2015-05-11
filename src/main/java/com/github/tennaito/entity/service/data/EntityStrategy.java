@@ -61,7 +61,7 @@ public class EntityStrategy<T> extends DefaultTransformation<T, EntityState> imp
 	 */
 	@Override
 	protected Object specificTransformation(Object to, Object from, Map<Object, Object> cache) {
-		if (!this.acceptType(from)) {
+		if (!this.isTypeAcceptable(from)) {
 			throw new IllegalArgumentException(
 					"Invalid type, instance must be assignable to com.github.tennaito.entity.service.data.EntityState class.");
 		}
@@ -85,10 +85,9 @@ public class EntityStrategy<T> extends DefaultTransformation<T, EntityState> imp
 	}
 
 	/* (non-Javadoc)
-	 * @see com.github.tennaito.entity.service.data.DefaultTransformation#acceptType(java.lang.Object)
+	 * @see com.github.tennaito.entity.service.data.TransformationStrategy#acceptType(java.lang.Object)
 	 */
-	@Override
-	protected boolean acceptType(Object object) {
+	public boolean isTypeAcceptable(Object object) {
 		return object != null && EntityState.class.isAssignableFrom(object.getClass());		
 	}
 

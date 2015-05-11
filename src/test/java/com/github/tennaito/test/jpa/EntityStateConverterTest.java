@@ -27,26 +27,43 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.github.tennaito.entity.service.EntityQueryService;
 import com.github.tennaito.entity.service.data.DefaultEntityStateConverter;
 import com.github.tennaito.entity.service.data.EntityState;
 import com.github.tennaito.entity.service.data.EntityStateConverter;
+import com.github.tennaito.entity.service.data.EntityStateStrategy;
+import com.github.tennaito.entity.service.data.EntityStrategy;
+import com.github.tennaito.entity.service.data.TransformationStrategy;
 import com.github.tennaito.entity.service.impl.DefaultEntityQueryService;
 import com.github.tennaito.test.jpa.entity.InvoiceList;
 import com.github.tennaito.test.jpa.entity.Item;
+import com.github.tennaito.test.pojo.Level;
 
 /**
  * @author Antonio Rabelo
  *
  */
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({Introspector.class, EntityStateStrategy.class, BeanInfo.class, PropertyDescriptor.class, Method.class})
 public class EntityStateConverterTest extends AbstractEntityServicesTest {
 	
 	@Test
@@ -124,7 +141,6 @@ public class EntityStateConverterTest extends AbstractEntityServicesTest {
 		
 		EntityState otherState = createStateFromId1(Item.class);
 		assertFalse(state1.equals(otherState));
-
 	}
 	
 	@Test
@@ -177,4 +193,72 @@ public class EntityStateConverterTest extends AbstractEntityServicesTest {
 		EntityState state   = converter.createState(object);
 		return state;
 	}	
+	
+	@Test
+	public void testNotPojoWhenIntrospectionException() throws Exception {
+		Level level = new Level("teste", null);
+		PowerMockito.mockStatic(Introspector.class);
+		Mockito.when(Introspector.getBeanInfo(Level.class)).thenThrow(new IntrospectionException(""));
+		EntityStateStrategy<Level> strategy = new EntityStateStrategy<Level>(0);
+		assertFalse(strategy.isTypeAcceptable(level));
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testCannotCreateTargetFromContext() throws Exception {
+//		Level level = new Level();
+//		EntityState state = Mockito.spy(new EntityState(Level.class));
+//		EntityStrategy<Level> strategy = Mockito.spy(new EntityStrategy<Level>());
+//		Mockito.when(state.getOriginalType()).thenReturn(clazz);
+//		Mockito.when(clazz.newInstance()).thenThrow(new InstantiationException());
+//		strategy.transform(state);
+	}
+	
+
+	@Test(expected=IllegalArgumentException.class)
+	public void testEntityStateStrategyIllegalArgumentWhenIntrospectionException() throws Exception {
+		this.<EntityState, Level>doIllegalArgumentWhenIntrospectionException(new Level("teste", null), new EntityStateStrategy<Level>());
+	}
+
+	@Test(expected=IllegalArgumentException.class)
+	public void testEntityStrategyIllegalArgumentWhenIntrospectionException() throws Exception {
+		this.<Level, EntityState>doIllegalArgumentWhenIntrospectionException(new EntityState(Level.class), new EntityStrategy<Level>());
+	}
+
+	private <T, F> void doIllegalArgumentWhenIntrospectionException(F from, TransformationStrategy<T, F> transformation)
+			throws IntrospectionException {
+		PowerMockito.mockStatic(Introspector.class);
+		Mockito.when(Introspector.getBeanInfo(from.getClass())).thenThrow(new IntrospectionException(""));		
+		TransformationStrategy<T, F> strategy = Mockito.spy(transformation);
+		Mockito.doReturn(true).when(strategy).isTypeAcceptable(from);
+		strategy.transform(from);
+		PowerMockito.verifyStatic();
+	}	
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testEntityStateStrategyIllegalArgumentWhenReflectiveOperationException() throws Exception {
+		Level level = new Level("teste", null);
+		this.<EntityState, Level>doIllegalArgumentWhenReflectiveOperationExceptionOnTransformation(level, level, "level", new EntityStateStrategy<Level>());
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testEntityStrategyIllegalArgumentWhenReflectiveOperationException() throws Exception {
+		this.<Level, EntityState>doIllegalArgumentWhenReflectiveOperationExceptionOnTransformation(new EntityState(Level.class), new Level("teste", null), "level", new EntityStrategy<Level>());
+	}
+
+	private <T,F> void doIllegalArgumentWhenReflectiveOperationExceptionOnTransformation(F from, Object object, String property, TransformationStrategy<T, F> transformation)
+			throws IntrospectionException, IllegalAccessException,
+			InvocationTargetException {
+		PowerMockito.mockStatic(Introspector.class);
+		BeanInfo info = PowerMockito.mock(BeanInfo.class);		
+		PropertyDescriptor prop = PowerMockito.spy(new PropertyDescriptor(property, object.getClass()));
+		Method method = PowerMockito.spy(prop.getReadMethod());		
+		Mockito.when(method.invoke(prop)).thenThrow(new InvocationTargetException(new Exception()));
+		Mockito.when(prop.getReadMethod()).thenReturn(method);
+		Mockito.when(info.getPropertyDescriptors()).thenReturn(new PropertyDescriptor[]{prop});
+		Mockito.when(Introspector.getBeanInfo(object.getClass())).thenReturn(info);
+		
+		TransformationStrategy<T, F> strategy = Mockito.spy(transformation);
+		Mockito.doReturn(true).when(strategy).isTypeAcceptable(object);
+		strategy.transform(from);
+	}
 }

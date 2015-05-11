@@ -41,4 +41,12 @@ public interface TransformationStrategy<T, F> {
 	 * @return     Transformed Object type <T>. 
 	 */
 	public T transform(F from);
+	
+	/**
+	 * Verify is an object has the acceptable type.
+	 * 
+	 * @param object Object instance.
+	 * @return true if it has acceptable type, false otherwise.
+	 */
+	public boolean isTypeAcceptable(Object object);
 }

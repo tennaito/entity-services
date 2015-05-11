@@ -110,14 +110,6 @@ public abstract class DefaultTransformation<T, F> implements TransformationStrat
 	 * @return      Object transformed.
 	 */
 	protected abstract Object specificTransformation(Object to, Object from, Map<Object, Object> cache);
-	
-	/**
-	 * Verify is an object has the acceptable type.
-	 * 
-	 * @param object Object instance.
-	 * @return true if it has acceptable type, false otherwise.
-	 */
-	protected abstract boolean acceptType(Object object);
 
 	/**
 	 * Verify in an object is able to be parsed.
@@ -130,7 +122,7 @@ public abstract class DefaultTransformation<T, F> implements TransformationStrat
 			   ((object.getClass().isArray()) ||
 			   (object instanceof Collection) || 
 			   (object instanceof Map) || 
-			   acceptType(object));
+			   isTypeAcceptable(object));
 	}
 	
 	/**
@@ -152,7 +144,7 @@ public abstract class DefaultTransformation<T, F> implements TransformationStrat
 					result = parseSiblingsCollection((Collection)sibling, cache);
 				} else if (sibling instanceof Map) {
 					result = parseSiblingsMap((Map<Object, Object>)sibling, cache);
-				} else if (acceptType(sibling)) {
+				} else if (isTypeAcceptable(sibling)) {
 					++depth;
 					result = cachedTransform(sibling, cache);
 					--depth;

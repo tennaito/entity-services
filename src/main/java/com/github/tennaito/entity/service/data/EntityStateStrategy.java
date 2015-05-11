@@ -62,7 +62,7 @@ public class EntityStateStrategy<T> extends DefaultTransformation<EntityState, T
 	 */
 	@Override
 	protected Object specificTransformation(Object to, Object from, Map<Object, Object> cache) {
-		if (to == null || !this.acceptType(from)) {
+		if (to == null || !this.isTypeAcceptable(from)) {
 			throw new IllegalArgumentException("Invalid type, to and from instance must be a Pojo and not null.");
 		}
 		EntityState result = (EntityState)to;
@@ -82,10 +82,9 @@ public class EntityStateStrategy<T> extends DefaultTransformation<EntityState, T
 	}
 	
 	/* (non-Javadoc)
-	 * @see com.github.tennaito.entity.service.data.DefaultTransformation#acceptType(java.lang.Object)
+	 * @see com.github.tennaito.entity.service.data.TransformationStrategy#acceptType(java.lang.Object)
 	 */
-	@Override
-	protected boolean acceptType(Object object) {
+	public boolean isTypeAcceptable(Object object) {
 		return object != null && this.isPojo(object);
 	}
 	
