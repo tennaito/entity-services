@@ -214,8 +214,8 @@ public class EntityStateConverterTest extends AbstractEntityServicesTest {
 		EntityState state = Mockito.spy(new EntityState(Level.class));
 		EntityStrategy<Level> strategy = Mockito.spy(new EntityStrategy<Level>());
 
-		// create an Illegal Access
-		Class instrumentedClass = Class.forName("java.lang.Class");
+		// create an InstantiationException
+		Class instrumentedClass = int[].class;
 		Mockito.when(state.getOriginalType()).thenReturn(instrumentedClass);
 		
 		strategy.transform(state);
