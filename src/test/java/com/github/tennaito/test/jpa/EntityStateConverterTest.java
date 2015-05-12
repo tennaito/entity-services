@@ -34,13 +34,8 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.security.ProtectionDomain;
 import java.util.Collection;
 import java.util.Set;
-
-import javassist.ClassPool;
-import javassist.CtClass;
-import javassist.CtMethod;
 
 import javax.persistence.EntityManager;
 
@@ -68,7 +63,7 @@ import com.github.tennaito.test.pojo.Level;
  *
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({Introspector.class, EntityStateStrategy.class, BeanInfo.class, PropertyDescriptor.class, Method.class})
+@PrepareForTest({Introspector.class, EntityStateStrategy.class, EntityStrategy.class, BeanInfo.class, PropertyDescriptor.class, Method.class})
 public class EntityStateConverterTest extends AbstractEntityServicesTest {
 	
 	@Test
@@ -234,10 +229,8 @@ public class EntityStateConverterTest extends AbstractEntityServicesTest {
 	private <T, F> void doIllegalArgumentWhenIntrospectionException(F from, TransformationStrategy<T, F> transformation)
 			throws IntrospectionException {
 		PowerMockito.mockStatic(Introspector.class);
-		Mockito.when(Introspector.getBeanInfo(from.getClass())).thenThrow(new IntrospectionException(""));		
-		TransformationStrategy<T, F> strategy = Mockito.spy(transformation);
-		Mockito.doReturn(true).when(strategy).isTypeAcceptable(from);
-		strategy.transform(from);
+		Mockito.when(Introspector.getBeanInfo(Level.class)).thenThrow(new IntrospectionException(""));		
+		transformation.transform(from);
 		PowerMockito.verifyStatic();
 	}	
 	
@@ -263,9 +256,6 @@ public class EntityStateConverterTest extends AbstractEntityServicesTest {
 		Mockito.when(prop.getReadMethod()).thenReturn(method);
 		Mockito.when(info.getPropertyDescriptors()).thenReturn(new PropertyDescriptor[]{prop});
 		Mockito.when(Introspector.getBeanInfo(object.getClass())).thenReturn(info);
-		
-		TransformationStrategy<T, F> strategy = Mockito.spy(transformation);
-		Mockito.doReturn(true).when(strategy).isTypeAcceptable(object);
-		strategy.transform(from);
+		transformation.transform(from);
 	}
 }
