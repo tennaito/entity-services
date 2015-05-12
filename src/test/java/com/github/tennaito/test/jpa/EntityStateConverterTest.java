@@ -34,8 +34,13 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.security.ProtectionDomain;
 import java.util.Collection;
 import java.util.Set;
+
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.CtMethod;
 
 import javax.persistence.EntityManager;
 
@@ -205,14 +210,16 @@ public class EntityStateConverterTest extends AbstractEntityServicesTest {
 	
 	@Test(expected=IllegalArgumentException.class)
 	public void testCannotCreateTargetFromContext() throws Exception {
-//		Level level = new Level();
-//		EntityState state = Mockito.spy(new EntityState(Level.class));
-//		EntityStrategy<Level> strategy = Mockito.spy(new EntityStrategy<Level>());
-//		Mockito.when(state.getOriginalType()).thenReturn(clazz);
-//		Mockito.when(clazz.newInstance()).thenThrow(new InstantiationException());
-//		strategy.transform(state);
+		Level level = new Level();
+		EntityState state = Mockito.spy(new EntityState(Level.class));
+		EntityStrategy<Level> strategy = Mockito.spy(new EntityStrategy<Level>());
+
+		// create an Illegal Access
+		Class instrumentedClass = Class.forName("java.lang.Class");
+		Mockito.when(state.getOriginalType()).thenReturn(instrumentedClass);
+		
+		strategy.transform(state);
 	}
-	
 
 	@Test(expected=IllegalArgumentException.class)
 	public void testEntityStateStrategyIllegalArgumentWhenIntrospectionException() throws Exception {
