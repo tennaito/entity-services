@@ -230,7 +230,9 @@ public class EntityStateConverterTest extends AbstractEntityServicesTest {
 			throws IntrospectionException {
 		PowerMockito.mockStatic(Introspector.class);
 		Mockito.when(Introspector.getBeanInfo(Level.class)).thenThrow(new IntrospectionException(""));		
-		transformation.transform(from);
+		TransformationStrategy<T, F> strategy = Mockito.spy(transformation);
+		Mockito.doReturn(true).when(strategy).isTypeAcceptable(from);
+		strategy.transform(from);
 		PowerMockito.verifyStatic();
 	}	
 	
@@ -256,6 +258,9 @@ public class EntityStateConverterTest extends AbstractEntityServicesTest {
 		Mockito.when(prop.getReadMethod()).thenReturn(method);
 		Mockito.when(info.getPropertyDescriptors()).thenReturn(new PropertyDescriptor[]{prop});
 		Mockito.when(Introspector.getBeanInfo(object.getClass())).thenReturn(info);
-		transformation.transform(from);
+		
+		TransformationStrategy<T, F> strategy = Mockito.spy(transformation);
+		Mockito.doReturn(true).when(strategy).isTypeAcceptable(object);
+		strategy.transform(from);
 	}
 }
