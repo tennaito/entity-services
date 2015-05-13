@@ -59,28 +59,20 @@ public class EntityStrategy<T> extends DefaultTransformation<T, EntityState> imp
 	/* (non-Javadoc)
 	 * @see com.github.tennaito.entity.service.data.DefaultTransformation#specificTransformation(java.lang.Object, java.lang.Object, java.util.Map)
 	 */
-	@Override
-	protected Object specificTransformation(Object to, Object from, Map<Object, Object> cache) {
+	protected Object specificTransformation(Object to, Object from, Map<Object, Object> cache) throws IntrospectionException, ReflectiveOperationException {
 		if (!this.isTypeAcceptable(from)) {
 			throw new IllegalArgumentException(
 					"Invalid type, instance must be assignable to com.github.tennaito.entity.service.data.EntityState class.");
 		}
 		
 		EntityState state = (EntityState)from;
-		Object     result = null;
-		try {
-			result = to;
-			BeanInfo info = Introspector.getBeanInfo(result.getClass());
-	        for (PropertyDescriptor pd : info.getPropertyDescriptors()) {
-	        	if (pd.getWriteMethod() != null) {
-	        		pd.getWriteMethod().invoke(result, parseSiblings(state.get(pd.getName()), cache));
-	        	}
-	        }
-		} catch (IntrospectionException e) {
-			throw new IllegalArgumentException(e);
-		} catch (ReflectiveOperationException e) {
-			throw new IllegalArgumentException(e);
-		}		
+		Object     result = to;
+		BeanInfo info = Introspector.getBeanInfo(result.getClass());
+        for (PropertyDescriptor pd : info.getPropertyDescriptors()) {
+        	if (pd.getWriteMethod() != null) {
+        		pd.getWriteMethod().invoke(result, parseSiblings(state.get(pd.getName()), cache));
+        	}
+        }
 		return result;
 	}
 
@@ -94,15 +86,10 @@ public class EntityStrategy<T> extends DefaultTransformation<T, EntityState> imp
 	/* (non-Javadoc)
 	 * @see com.github.tennaito.entity.service.data.DefaultTransformation#createTargetFromContext(java.lang.Object)
 	 */
-	@Override
-	protected Object createTargetFromContext(Object from) {
+	protected Object createTargetFromContext(Object from) throws ReflectiveOperationException {
 		Object entity = null;
-		try {
-			if (from != null) {
-				entity = ((EntityState)from).getOriginalType().newInstance();
-			}
-		} catch (ReflectiveOperationException e) {
-			throw new IllegalArgumentException(e);
+		if (from != null) {
+			entity = ((EntityState)from).getOriginalType().newInstance();
 		}
 		return entity;
 	}

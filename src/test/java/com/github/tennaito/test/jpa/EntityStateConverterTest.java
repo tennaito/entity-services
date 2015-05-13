@@ -54,7 +54,7 @@ public class EntityStateConverterTest extends AbstractEntityServicesTest {
 		EntityState state = createState();
 		
 		assertEquals("InvoiceList", state.getName());
-		assertEquals(1, state.get("id"));
+		assertEquals(Integer.valueOf(1), (Integer)state.get("id"));
 		assertEquals("Fruits", state.get("description"));
 		assertEquals(3, state.<Set<EntityState>>get("items").size());
 	}

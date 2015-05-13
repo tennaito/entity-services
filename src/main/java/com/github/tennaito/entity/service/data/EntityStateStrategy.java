@@ -60,24 +60,17 @@ public class EntityStateStrategy<T> extends DefaultTransformation<EntityState, T
 	/* (non-Javadoc)
 	 * @see com.github.tennaito.entity.service.data.DefaultTransformation#specificTransformation(java.lang.Object, java.lang.Object, java.util.Map)
 	 */
-	@Override
-	protected Object specificTransformation(Object to, Object from, Map<Object, Object> cache) {
+	protected Object specificTransformation(Object to, Object from, Map<Object, Object> cache) throws IntrospectionException, ReflectiveOperationException {
 		if (to == null || !this.isTypeAcceptable(from)) {
 			throw new IllegalArgumentException("Invalid type, to and from instance must be a Pojo and not null.");
 		}
 		EntityState result = (EntityState)to;
-		try {
-			BeanInfo info = Introspector.getBeanInfo(from.getClass());
-	        for (PropertyDescriptor pd : info.getPropertyDescriptors()) {
-	        	if (pd.getReadMethod() != null) {
-	        		result.put(pd.getName(), parseSiblings(pd.getReadMethod().invoke(from), cache));
-	        	}
-	        }
-		} catch (IntrospectionException e) {
-			throw new IllegalArgumentException(e);
-		} catch (ReflectiveOperationException e) {
-			throw new IllegalArgumentException(e);
-		}		
+		BeanInfo info = Introspector.getBeanInfo(from.getClass());
+        for (PropertyDescriptor pd : info.getPropertyDescriptors()) {
+        	if (pd.getReadMethod() != null) {
+        		result.put(pd.getName(), parseSiblings(pd.getReadMethod().invoke(from), cache));
+        	}
+        }
 		return result;
 	}
 	

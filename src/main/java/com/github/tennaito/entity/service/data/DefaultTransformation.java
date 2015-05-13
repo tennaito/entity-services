@@ -23,6 +23,7 @@
  */
 package com.github.tennaito.entity.service.data;
 
+import java.beans.IntrospectionException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -86,9 +87,13 @@ public abstract class DefaultTransformation<T, F> implements TransformationStrat
 		if (cache.containsKey(System.identityHashCode(from))) {
 			result = cache.get(System.identityHashCode(from));
 		} else {
-			Object to = createTargetFromContext(from);
-			cache.put(System.identityHashCode(from), to);
-			result = specificTransformation(to, from, cache);
+			try {
+				Object to = createTargetFromContext(from);
+				cache.put(System.identityHashCode(from), to);
+				result = specificTransformation(to, from, cache);
+			} catch (IntrospectionException | ReflectiveOperationException e) {
+				throw new UnsupportedOperationException(e);
+			}
 		}
 		return result;
 	}
@@ -99,7 +104,7 @@ public abstract class DefaultTransformation<T, F> implements TransformationStrat
 	 * @param from the context of the target is the object that we want to transform.
 	 * @return Instance of the target object.
 	 */
-	protected abstract Object createTargetFromContext(Object from);
+	protected abstract Object createTargetFromContext(Object from) throws ReflectiveOperationException;
 
 	/**
 	 * Defines the specific transformation algorithm for parsing a single object.
@@ -109,7 +114,7 @@ public abstract class DefaultTransformation<T, F> implements TransformationStrat
 	 * @param cache Map cache to evict dependency cycle.
 	 * @return      Object transformed.
 	 */
-	protected abstract Object specificTransformation(Object to, Object from, Map<Object, Object> cache);
+	protected abstract Object specificTransformation(Object to, Object from, Map<Object, Object> cache) throws IntrospectionException, ReflectiveOperationException;
 
 	/**
 	 * Verify in an object is able to be parsed.
