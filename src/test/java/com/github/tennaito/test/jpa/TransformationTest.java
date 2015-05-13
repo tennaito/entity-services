@@ -25,6 +25,12 @@ package com.github.tennaito.test.jpa;
 
 import static junit.framework.Assert.assertEquals;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.junit.Test;
 
 import com.github.tennaito.entity.service.data.EntityState;
@@ -101,4 +107,27 @@ public class TransformationTest extends AbstractEntityServicesTest {
 								   .<EntityState>get("level")
 								   .<EntityState>get("level").get("name"));		
 	}
+
+	@Test
+	public void testProperties() {
+		Level branch = new Level("branch");
+		Level multidimensionalHouseTree = new Level("trunk", branch); // :P
+		multidimensionalHouseTree.setBase(new Level[]{new Level("basement")});
+		List<Level> rooms = new ArrayList<Level>();
+		rooms.add(new Level("room"));
+		multidimensionalHouseTree.setRooms(rooms);
+		Map<Level, Level> baseRooms = new HashMap<Level, Level>();
+		baseRooms.put(new Level("baseKey"), new Level("roomValue"));
+		multidimensionalHouseTree.setBaseRooms(baseRooms);
+		
+		EntityStateStrategy<Level> strategy = new EntityStateStrategy<Level>();
+		EntityState state = strategy.transform(multidimensionalHouseTree);
+		assertEquals("trunk", state.get("name"));		
+		assertEquals("branch", state.<EntityState>get("level").get("name"));
+		assertEquals("basement", ((EntityState)state.<Object[]>get("base")[0]).get("name"));
+		assertEquals("room", ((EntityState)state.<Collection>get("rooms").iterator().next()).get("name"));
+		Map.Entry<Object, Object> baseRoom = (Map.Entry<Object, Object>)state.<Map>get("baseRooms").entrySet().iterator().next();
+		assertEquals("baseKey", ((EntityState)baseRoom.getKey()).get("name"));
+		assertEquals("roomValue", ((EntityState)baseRoom.getValue()).get("name"));
+	}	
 }

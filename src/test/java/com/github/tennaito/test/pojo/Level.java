@@ -24,7 +24,15 @@
 package com.github.tennaito.test.pojo;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
+/**
+ * Just an objeto to test dependency cycle, and properties transformation.
+ * 
+ * @author AntonioRabelo
+ */
 public class Level implements Serializable {
 	
 	/**
@@ -34,10 +42,18 @@ public class Level implements Serializable {
 	
 	private Level level;
 	private String name;
+	private List<Level> rooms;
+	private Level[] base;
+	private Map<Level, Level> baseRooms;
 	
 	public Level() {
-		this(null, null);
+		this(null);
 	}
+	
+	public Level(String name) {
+		this.name = name;
+		this.level = null;
+	}	
 	
 	public Level(String name, Level sub) {
 		this.name = name;
@@ -56,6 +72,48 @@ public class Level implements Serializable {
 		this.level = level;
 	}
 
+	/**
+	 * @return the rooms
+	 */
+	public List<Level> getRooms() {
+		return rooms;
+	}
+
+	/**
+	 * @param rooms the rooms to set
+	 */
+	public void setRooms(List<Level> rooms) {
+		this.rooms = rooms;
+	}
+
+	/**
+	 * @return the base
+	 */
+	public Level[] getBase() {
+		return base;
+	}
+
+	/**
+	 * @param base the base to set
+	 */
+	public void setBase(Level[] base) {
+		this.base = base;
+	}
+
+	/**
+	 * @return the baseRooms
+	 */
+	public Map<Level, Level> getBaseRooms() {
+		return baseRooms;
+	}
+
+	/**
+	 * @param baseRooms the baseRooms to set
+	 */
+	public void setBaseRooms(Map<Level, Level> baseRooms) {
+		this.baseRooms = baseRooms;
+	}
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
@@ -63,8 +121,12 @@ public class Level implements Serializable {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		result = prime * result + Arrays.hashCode(base);
+		result = prime * result
+				+ ((baseRooms == null) ? 0 : baseRooms.hashCode());
 		result = prime * result + ((level == null) ? 0 : level.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((rooms == null) ? 0 : rooms.hashCode());
 		return result;
 	}
 
@@ -80,6 +142,13 @@ public class Level implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		Level other = (Level) obj;
+		if (!Arrays.equals(base, other.base))
+			return false;
+		if (baseRooms == null) {
+			if (other.baseRooms != null)
+				return false;
+		} else if (!baseRooms.equals(other.baseRooms))
+			return false;
 		if (level == null) {
 			if (other.level != null)
 				return false;
@@ -90,8 +159,11 @@ public class Level implements Serializable {
 				return false;
 		} else if (!name.equals(other.name))
 			return false;
+		if (rooms == null) {
+			if (other.rooms != null)
+				return false;
+		} else if (!rooms.equals(other.rooms))
+			return false;
 		return true;
-	}	
-	
-	
+	}
 }
