@@ -93,6 +93,8 @@ public class EntityStateConverterTest extends AbstractEntityServicesTest {
 		assertTrue(state1.equals(state1));
 		// same object
 		assertTrue(state1.equals(state2));
+		// same hashCode
+		assertTrue(state1.hashCode() == state2.hashCode());
 		// not the same...
 		assertFalse(state1.equals(null));
 		assertFalse(state1.equals("teste"));

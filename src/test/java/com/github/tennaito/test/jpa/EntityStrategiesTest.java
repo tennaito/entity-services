@@ -50,12 +50,13 @@ import com.github.tennaito.test.pojo.Level;
  *
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({Introspector.class, EntityStateStrategy.class, EntityStrategy.class, BeanInfo.class, PropertyDescriptor.class, Method.class})
+@PrepareForTest({Introspector.class, BeanInfo.class, PropertyDescriptor.class, Method.class})
 public class EntityStrategiesTest extends AbstractEntityServicesTest {
 	
 	@Test
+	@PrepareForTest(EntityStateStrategy.class)
 	public void testNotPojoWhenIntrospectionException() throws Exception {
-		Level level = new Level("teste", null);
+		Level level = new Level("teste");
 		PowerMockito.mockStatic(Introspector.class);
 		Mockito.when(Introspector.getBeanInfo(Level.class)).thenThrow(new IntrospectionException(""));
 		EntityStateStrategy<Level> strategy = new EntityStateStrategy<Level>(0);
@@ -76,34 +77,47 @@ public class EntityStrategiesTest extends AbstractEntityServicesTest {
 	}
 
 	@Test(expected=IllegalArgumentException.class)
+	@PrepareForTest(EntityStateStrategy.class)	
 	public void testEntityStateStrategyIllegalArgumentWhenIntrospectionException() throws Exception {
-		this.<EntityState, Level>doIllegalArgumentWhenIntrospectionException(new Level("teste", null), new EntityStateStrategy<Level>());
+		PowerMockito.mockStatic(Introspector.class);
+		// transformation expect Level.class both for getting properties (EntityStateStrategy) or setting properties (EntityStrategy)
+		Mockito.when(Introspector.getBeanInfo(Level.class)).thenCallRealMethod();
+		Mockito.when(Introspector.getBeanInfo(Level.class)).thenThrow(new IntrospectionException(""));		
+		
+		this.<EntityState, Level>doIllegalArgumentWhenIntrospectionException(new Level("teste"), new EntityStateStrategy<Level>());
 	}
 
 	@Test(expected=IllegalArgumentException.class)
+	@PrepareForTest(EntityStrategy.class)
 	public void testEntityStrategyIllegalArgumentWhenIntrospectionException() throws Exception {
+		PowerMockito.mockStatic(Introspector.class);
+		// transformation expect Level.class both for getting properties (EntityStateStrategy) or setting properties (EntityStrategy)
+		Mockito.when(Introspector.getBeanInfo(Level.class)).thenThrow(new IntrospectionException(""));		
+		
 		this.<Level, EntityState>doIllegalArgumentWhenIntrospectionException(new EntityState(Level.class), new EntityStrategy<Level>());
 	}
 
 	private <T, F> void doIllegalArgumentWhenIntrospectionException(F from, TransformationStrategy<T, F> transformation)
 			throws IntrospectionException {
-		PowerMockito.mockStatic(Introspector.class);
-		Mockito.when(Introspector.getBeanInfo(Level.class)).thenThrow(new IntrospectionException(""));		
-		TransformationStrategy<T, F> strategy = Mockito.spy(transformation);
-		Mockito.doReturn(true).when(strategy).isTypeAcceptable(from);
-		strategy.transform(from);
+//		PowerMockito.mockStatic(Introspector.class);
+//		// transformation expect Level.class both for getting properties (EntityStateStrategy) or setting properties (EntityStrategy)
+//		Mockito.when(Introspector.getBeanInfo(Level.class)).thenCallRealMethod();
+//		Mockito.when(Introspector.getBeanInfo(Level.class)).thenThrow(new IntrospectionException(""));		
+//		TransformationStrategy<T, F> strategy = Mockito.spy(transformation);
+//		Mockito.doReturn(true).when(strategy).isTypeAcceptable(from);
+		transformation.transform(from);
 		PowerMockito.verifyStatic();
 	}	
 	
 	@Test(expected=IllegalArgumentException.class)
 	public void testEntityStateStrategyIllegalArgumentWhenReflectiveOperationException() throws Exception {
-		Level level = new Level("teste", null);
+		Level level = new Level("teste");
 		this.<EntityState, Level>doIllegalArgumentWhenReflectiveOperationExceptionOnTransformation(level, level, "level", new EntityStateStrategy<Level>());
 	}
 	
 	@Test(expected=IllegalArgumentException.class)
 	public void testEntityStrategyIllegalArgumentWhenReflectiveOperationException() throws Exception {
-		this.<Level, EntityState>doIllegalArgumentWhenReflectiveOperationExceptionOnTransformation(new EntityState(Level.class), new Level("teste", null), "level", new EntityStrategy<Level>());
+		this.<Level, EntityState>doIllegalArgumentWhenReflectiveOperationExceptionOnTransformation(new EntityState(Level.class), new Level("teste"), "level", new EntityStrategy<Level>());
 	}
 
 	private <T,F> void doIllegalArgumentWhenReflectiveOperationExceptionOnTransformation(F from, Object object, String property, TransformationStrategy<T, F> transformation)
@@ -118,8 +132,8 @@ public class EntityStrategiesTest extends AbstractEntityServicesTest {
 		Mockito.when(info.getPropertyDescriptors()).thenReturn(new PropertyDescriptor[]{prop});
 		Mockito.when(Introspector.getBeanInfo(object.getClass())).thenReturn(info);
 		
-		TransformationStrategy<T, F> strategy = Mockito.spy(transformation);
-		Mockito.doReturn(true).when(strategy).isTypeAcceptable(object);
-		strategy.transform(from);
+//		TransformationStrategy<T, F> strategy = Mockito.spy(transformation);
+//		Mockito.doReturn(true).when(strategy).isTypeAcceptable(object);
+		transformation.transform(from);
 	}
 }
