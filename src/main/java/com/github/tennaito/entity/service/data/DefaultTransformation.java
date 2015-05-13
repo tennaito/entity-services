@@ -91,7 +91,9 @@ public abstract class DefaultTransformation<T, F> implements TransformationStrat
 				Object to = createTargetFromContext(from);
 				cache.put(System.identityHashCode(from), to);
 				result = specificTransformation(to, from, cache);
-			} catch (IntrospectionException | ReflectiveOperationException e) {
+			} catch (IntrospectionException e) {
+				throw new UnsupportedOperationException(e);
+			} catch (ReflectiveOperationException e) {
 				throw new UnsupportedOperationException(e);
 			}
 		}
