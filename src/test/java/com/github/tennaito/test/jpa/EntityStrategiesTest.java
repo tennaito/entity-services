@@ -25,12 +25,8 @@ package com.github.tennaito.test.jpa;
 
 import static junit.framework.Assert.assertFalse;
 
-import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Map;
 
 import org.junit.Test;
@@ -41,7 +37,6 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.github.tennaito.entity.service.data.DefaultEntityStateConverter;
-import com.github.tennaito.entity.service.data.DefaultTransformation;
 import com.github.tennaito.entity.service.data.EntityState;
 import com.github.tennaito.entity.service.data.EntityStateConverter;
 import com.github.tennaito.entity.service.data.EntityStateStrategy;
@@ -54,17 +49,17 @@ import com.github.tennaito.test.pojo.Level;
  *
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({Introspector.class, BeanInfo.class, PropertyDescriptor.class, Method.class})
 public class EntityStrategiesTest extends AbstractEntityServicesTest {
 	
 	@Test
-	@PrepareForTest(EntityStateStrategy.class)
+	@PrepareForTest({Introspector.class})
 	public void testNotPojoWhenIntrospectionException() throws Exception {
 		Level level = new Level("teste");
 		PowerMockito.mockStatic(Introspector.class);
 		Mockito.when(Introspector.getBeanInfo(Level.class)).thenThrow(new IntrospectionException(""));
-		EntityStateStrategy<Level> strategy = new EntityStateStrategy<Level>(0);
+		EntityStateStrategy<Level> strategy = PowerMockito.spy(new EntityStateStrategy<Level>(0));
 		assertFalse(strategy.isTypeAcceptable(level));
+		PowerMockito.verifyStatic();
 	}
 	
 	@Test(expected=UnsupportedOperationException.class)
@@ -81,27 +76,33 @@ public class EntityStrategiesTest extends AbstractEntityServicesTest {
 	}
 
 	@Test(expected=UnsupportedOperationException.class)
-	@PrepareForTest({EntityStateStrategy.class, DefaultTransformation.class})	
 	public void testEntityStateStrategyUnsupportedWhenIntrospectionException() throws Exception {
-		PowerMockito.mockStatic(Introspector.class);
-		// transformation expect Level.class both for getting properties (EntityStateStrategy) or setting properties (EntityStrategy)
-		Mockito.when(Introspector.getBeanInfo(Level.class)).thenCallRealMethod();
-		Mockito.when(Introspector.getBeanInfo(Level.class)).thenThrow(new IntrospectionException(""));		
+		TransformationStrategy<EntityState, Level> transformation = new EntityStateStrategy<Level>() {
+			@Override
+			protected Object specificTransformation(Object to, Object from,
+					Map<Object, Object> cache) throws IntrospectionException,
+					ReflectiveOperationException {
+				throw new IntrospectionException("");
+			}
+		};
 		
-		new EntityStateStrategy<Level>().transform(new Level("teste"));
-		PowerMockito.verifyStatic();
+		transformation.transform(new Level("teste"));		
 	}
 
 	@Test(expected=UnsupportedOperationException.class)
-	@PrepareForTest({EntityStrategy.class, DefaultTransformation.class})
 	public void testEntityStrategyUnsupportedWhenIntrospectionException() throws Exception {
-		PowerMockito.mockStatic(Introspector.class);
-		// transformation expect Level.class both for getting properties (EntityStateStrategy) or setting properties (EntityStrategy)
-		Mockito.when(Introspector.getBeanInfo(Level.class)).thenThrow(new IntrospectionException(""));		
+		EntityStateConverter<Level> converter = new DefaultEntityStateConverter<Level>();
+		EntityState from = converter.createState(new Level("level"));
+		TransformationStrategy<Level, EntityState> transformation = new EntityStrategy<Level>() {
+			@Override
+			protected Object specificTransformation(Object to, Object from,
+					Map<Object, Object> cache) throws IntrospectionException,
+					ReflectiveOperationException {
+				throw new IntrospectionException("");
+			}
+		};
 		
-		new EntityStrategy<Level>().transform(new EntityState(Level.class));
-		
-		PowerMockito.verifyStatic();
+		transformation.transform(from);
 	}
 	
 	@Test(expected=UnsupportedOperationException.class)
