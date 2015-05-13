@@ -52,12 +52,12 @@ import com.github.tennaito.test.pojo.Level;
 public class EntityStrategiesTest extends AbstractEntityServicesTest {
 	
 	@Test
-	@PrepareForTest({Introspector.class})
+	@PrepareForTest({Introspector.class, EntityStateStrategy.class})
 	public void testNotPojoWhenIntrospectionException() throws Exception {
 		Level level = new Level("teste");
 		PowerMockito.mockStatic(Introspector.class);
 		Mockito.when(Introspector.getBeanInfo(Level.class)).thenThrow(new IntrospectionException(""));
-		EntityStateStrategy<Level> strategy = PowerMockito.spy(new EntityStateStrategy<Level>(0));
+		EntityStateStrategy<Level> strategy = new EntityStateStrategy<Level>(0);
 		assertFalse(strategy.isTypeAcceptable(level));
 		PowerMockito.verifyStatic();
 	}
